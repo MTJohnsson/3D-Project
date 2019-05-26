@@ -199,6 +199,27 @@
     <FxCompile Include="PixelShaderDefault.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
+    <FxCompile Include="ResourcesFiles\LastPassVertexShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\LastPassPixelShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\LastPassGeometryShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\DeferredGeometryShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\DeferredPixelShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\DeferredPixelShaderNormalMapping.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\DeferredVertexShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
