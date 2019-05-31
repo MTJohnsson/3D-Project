@@ -10,6 +10,8 @@ int WINAPI wWinMain(HINSTANCE hInstance,
 	LPWSTR liCmdLine,
 	int nCmdShow)
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
 	Engine engine;
 	if (engine.Initialize(hInstance, 1280, 1024, nCmdShow))
 	{

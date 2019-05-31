@@ -110,7 +110,7 @@ float4 main(GSOutput input) : SV_Target
         
         // Without normal mapping
         float3 lightDir = normalize(light[i].position - input.worldPos.xyz);
-        float diffuseFactor = dot(lightDir, input.normal);
+        float diffuseFactor = dot(lightDir, finalNormal);
 
         if (diffuseFactor < 0.0f)
         {
@@ -126,7 +126,7 @@ float4 main(GSOutput input) : SV_Target
         // Specular light / Phong shading
         float3 viewDir = normalize(input.camPos - input.worldPos.xyz);
         float3 ref = pow(max((2.25f * (normalize(light[i].position - input.worldPos) * input.normal)) * input.normal - normalize(light[i].position - input.worldPos), 0), 10.f);
-        float t = dot(ref, input.normal);
+        float t = dot(ref, finalNormal);
         if (t < 0.0f)
         {
             t = 0.0f;

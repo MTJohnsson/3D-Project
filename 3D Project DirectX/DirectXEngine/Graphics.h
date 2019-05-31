@@ -29,7 +29,7 @@ struct RenderTarget {
 	ID3D11RenderTargetView* renderTarget = nullptr;
 	ID3D11ShaderResourceView* shaderResource = nullptr;
 };
-const UINT BUFFERS = 3;
+const UINT BUFFERS = 4;
 
 class Graphics
 {
@@ -93,5 +93,6 @@ private:
 	//Deferred Render Shaders
 	Shader lastPassShaders;
 	Shader deferredShaders;
+	Shader deferredShadersNormalMapping;
 };
 #endif // !OBJMODEL_H

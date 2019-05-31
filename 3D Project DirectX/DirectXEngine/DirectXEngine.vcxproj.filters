@@ -193,9 +193,6 @@
     <FxCompile Include="ResourcesFiles\GeometryShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
-    <FxCompile Include="Lights.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
     <FxCompile Include="PixelShaderDefault.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>

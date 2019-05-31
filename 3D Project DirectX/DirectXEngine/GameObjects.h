@@ -9,6 +9,7 @@
 #include <SimpleMath.h>
 using namespace DirectX::SimpleMath;
 
+//Separate into per frame and per object
 struct PerFrameMatrices {
 	XMMATRIX world;
 	XMMATRIX view;

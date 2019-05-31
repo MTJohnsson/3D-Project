@@ -62,7 +62,6 @@ void main(triangle GS_IN input[3], inout TriangleStream<GSOutput> OutputStream)
 		output.edge2 = normalize(v);
 		output.deltaUV1 = deltaUV1;
 		output.deltaUV2 = deltaUV2;
-
 		OutputStream.Append(output);
 	}
 

@@ -11,12 +11,16 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 		return false;
 	if (!InitializeGraphicsBuffer())
 		return false;
+	if (!bufferDisplayBuffer.Initialize(device))
+		return false;
 	if (!InitializeShaders())
 		return false;
 	if (!InitializeScene())
 		return false;
 	InitializeScreenQuad();
-	objects.InitializeGameObjects(device, deviceContext, shader, shader2);
+	//objects.InitializeGameObjects(device, deviceContext, shader, shader2);
+	//objects.InitializeGameObjects(device, deviceContext, &deferredShaders, &deferredShadersNormalMapping);
+	objects.InitializeGameObjects(device, deviceContext, &deferredShadersNormalMapping, &deferredShaders);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -35,7 +39,9 @@ float distZ = 0.0f;
 float heightDifferance = 0;
 void Graphics::RenderFrame(float dt, std::vector<XMFLOAT4> mousePickInfo)
 {
+	FirstRender();
 	DrawPass(dt, mousePickInfo);
+	LastRender();
 	//deviceContext->PSSetConstantBuffers(0, 1, objects.LightBuffer->getConstantBuffer());
 
 	//float clearColor[] = { 0.06f, 0.06f,0.06f, 1.0f };
@@ -84,13 +90,15 @@ void Graphics::FirstRender() {
 	ID3D11RenderTargetView* renderTargetViews[] = {
 		renderBuffers[0].renderTarget,
 		renderBuffers[1].renderTarget,
-		renderBuffers[2].renderTarget
+		renderBuffers[2].renderTarget,
+		renderBuffers[3].renderTarget
 	};
 	deviceContext->OMSetRenderTargets(BUFFERS, renderTargetViews, renderDepthStencil);
 
 	deviceContext->ClearRenderTargetView(renderBuffers[0].renderTarget, cyan);
 	deviceContext->ClearRenderTargetView(renderBuffers[1].renderTarget, black);
 	deviceContext->ClearRenderTargetView(renderBuffers[2].renderTarget, yellow);
+	deviceContext->ClearRenderTargetView(renderBuffers[3].renderTarget, white);
 	deviceContext->ClearDepthStencilView(renderDepthStencil, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -107,13 +115,14 @@ void Graphics::LastRender() {
 	deviceContext->PSSetShader(lastPassShaders.GetPixelShader()->GetShader(), NULL, 0);
 	deviceContext->PSSetSamplers(0, 1, &samplerState);
 
-	deviceContext->PSSetShaderResources(0, 1, &renderBuffers[0].shaderResource);
-	deviceContext->PSSetShaderResources(1, 1, &renderBuffers[1].shaderResource);
-	deviceContext->PSSetShaderResources(2, 1, &renderBuffers[2].shaderResource);
+	deviceContext->PSSetShaderResources(2, 1, &renderBuffers[0].shaderResource);
+	deviceContext->PSSetShaderResources(3, 1, &renderBuffers[1].shaderResource);
+	deviceContext->PSSetShaderResources(4, 1, &renderBuffers[2].shaderResource);
+	deviceContext->PSSetShaderResources(5, 1, &renderBuffers[3].shaderResource);
 
 
 	bufferDisplayBuffer.data.display = deferredBufferDisplay;
-	bufferDisplayBuffer.updateConstantBuffer(deviceContext);
+	bufferDisplayBuffer.updateConstantBuffer(deviceContext); //Fail
 	deviceContext->PSSetConstantBuffers(1, 1, bufferDisplayBuffer.getConstantBuffer());
 
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
@@ -132,25 +141,15 @@ void Graphics::LastRender() {
 	deviceContext->PSSetShaderResources(0, 1, &nullsrv);
 	deviceContext->PSSetShaderResources(1, 1, &nullsrv);
 	deviceContext->PSSetShaderResources(2, 1, &nullsrv);
+	deviceContext->PSSetShaderResources(3, 1, &nullsrv);
 }
 void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
-	float clearColor[] = { 0.06f, 0.06f,0.06f, 1.0f };
-	deviceContext->ClearRenderTargetView(this->renderTargetView, clearColor);
-	//clear dethstencil view
-	deviceContext->ClearDepthStencilView(depthStencilView,
-		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	//this->deviceContext->PSSetConstantBuffers(0, 1, &constBuffer.getConstantBuffer());
-	//draw
-	deviceContext->IASetInputLayout(shader->GetVertexShader()->GetInputLayout());
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	//after setting Topplogy we need to set rasterizer state
-	deviceContext->RSSetState(rasterizerState);
-
+	
 	//set depthStencil state
-	deviceContext->OMSetDepthStencilState(nullptr, 0);
-	deviceContext->PSSetSamplers(0, 1, &samplerState);
-	deviceContext->HSSetShader(nullptr, nullptr, 0);
-	deviceContext->DSSetShader(nullptr, nullptr, 0);
+	//deviceContext->OMSetDepthStencilState(nullptr, 0);
+	//deviceContext->PSSetSamplers(0, 1, &samplerState);
+	//deviceContext->HSSetShader(nullptr, nullptr, 0);
+	//deviceContext->DSSetShader(nullptr, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, LightBuffer.getConstantBuffer());
 
 
@@ -480,7 +479,7 @@ bool Graphics::InitializeShaders()
 	std::wstring shaderfolder = L"..\\x64\\Debug\\";
 
 
-	shader = new Shader();
+	/*shader = new Shader();
 	shader->CreatVertexShader(device, shaderfolder + L"VertexShader.cso", layout, numElements);
 	shader->CreatGeometryShader(device, shaderfolder + L"GeometryShader.cso");
 	shader->CreatPixelShader(device, shaderfolder + L"PixelShader.cso");
@@ -489,15 +488,19 @@ bool Graphics::InitializeShaders()
 	shader2 = new Shader();
 	shader2->CreatVertexShader(device, shaderfolder + L"VertexShader.cso", layout, numElements);
 	shader2->CreatGeometryShader(device, shaderfolder + L"GeometryShader.cso");
-	shader2->CreatPixelShader(device, shaderfolder + L"PixelShaderDefault.cso");
+	shader2->CreatPixelShader(device, shaderfolder + L"PixelShaderDefault.cso");*/
 
 	lastPassShaders.CreatVertexShader(device, shaderfolder + L"LastPassVertexShader.cso", layout2, numElements2);
+	lastPassShaders.CreatGeometryShader(device, shaderfolder + L"LastPassGeometryShader.cso");
 	lastPassShaders.CreatPixelShader(device, shaderfolder + L"LastPassPixelShader.cso");
 
 	deferredShaders.CreatVertexShader(device, shaderfolder + L"DeferredVertexShader.cso", layout2, numElements2);
-	deferredShaders.CreatPixelShader(device, shaderfolder + L"DeferredPixelShader.cso");
 	deferredShaders.CreatGeometryShader(device, shaderfolder + L"DeferredGeometryShader.cso");
+	deferredShaders.CreatPixelShader(device, shaderfolder + L"DeferredPixelShader.cso");
 
+	deferredShadersNormalMapping.CreatVertexShader(device, shaderfolder + L"DeferredVertexShader.cso", layout2, numElements2);
+	deferredShadersNormalMapping.CreatPixelShader(device, shaderfolder + L"DeferredPixelShaderNormalMapping.cso");
+	deferredShadersNormalMapping.CreatGeometryShader(device, shaderfolder + L"DeferredGeometryShader.cso");
 
 	//Create sampler description for sampler state
 	D3D11_SAMPLER_DESC sampDesc;

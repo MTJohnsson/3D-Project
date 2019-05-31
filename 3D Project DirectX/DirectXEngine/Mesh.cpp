@@ -42,6 +42,17 @@ void Mesh::draw()
 	deviceContext->GSSetShader(shaderPtr->GetGeometryShader()->GetShader(), nullptr, 0);
 	deviceContext->PSSetShader(shaderPtr->GetPixelShader()->GetShader(), NULL, 0);
 
+	for (int i = 0; i < textures.size(); i++)
+	{
+		if (DIFFUSE == textures[i].getType())
+		{
+			deviceContext->PSSetShaderResources(0, 1, textures[i].getTextureView());
+		}
+		if (NORMAL == textures[i].getType())
+		{
+			deviceContext->PSSetShaderResources(1, 1, textures[i].getTextureView());
+		}
+	}
 
 	deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), vertexBuffer.Stride(), &offset);
 	deviceContext->Draw(indices.size(), 0);
@@ -49,6 +60,7 @@ void Mesh::draw()
 
 Mesh::~Mesh()
 {
+	//Possible memory leak
 	this->shaderPtr = nullptr;
 	delete this->shaderPtr;
 }
