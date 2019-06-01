@@ -141,6 +141,7 @@
     <ClCompile Include="Mesh\Terrain.cpp" />
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
+    <ClCompile Include="Skybox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXHelp.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="Mesh\Terrain.h" />
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="RenderWindow.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
