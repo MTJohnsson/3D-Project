@@ -90,15 +90,13 @@ void Graphics::FirstRender() {
 	ID3D11RenderTargetView* renderTargetViews[] = {
 		renderBuffers[0].renderTarget,
 		renderBuffers[1].renderTarget,
-		renderBuffers[2].renderTarget,
-		renderBuffers[3].renderTarget
+		renderBuffers[2].renderTarget
 	};
 	deviceContext->OMSetRenderTargets(BUFFERS, renderTargetViews, renderDepthStencil);
 
 	deviceContext->ClearRenderTargetView(renderBuffers[0].renderTarget, cyan);
 	deviceContext->ClearRenderTargetView(renderBuffers[1].renderTarget, black);
 	deviceContext->ClearRenderTargetView(renderBuffers[2].renderTarget, yellow);
-	deviceContext->ClearRenderTargetView(renderBuffers[3].renderTarget, white);
 	deviceContext->ClearDepthStencilView(renderDepthStencil, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -118,7 +116,6 @@ void Graphics::LastRender() {
 	deviceContext->PSSetShaderResources(2, 1, &renderBuffers[0].shaderResource);
 	deviceContext->PSSetShaderResources(3, 1, &renderBuffers[1].shaderResource);
 	deviceContext->PSSetShaderResources(4, 1, &renderBuffers[2].shaderResource);
-	deviceContext->PSSetShaderResources(5, 1, &renderBuffers[3].shaderResource);
 
 
 	bufferDisplayBuffer.data.display = deferredBufferDisplay;
@@ -141,7 +138,6 @@ void Graphics::LastRender() {
 	deviceContext->PSSetShaderResources(2, 1, &nullsrv);
 	deviceContext->PSSetShaderResources(3, 1, &nullsrv);
 	deviceContext->PSSetShaderResources(4, 1, &nullsrv);
-	deviceContext->PSSetShaderResources(5, 1, &nullsrv);
 	deviceContext->GSSetShader(NULL, NULL, 0);
 }
 void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
