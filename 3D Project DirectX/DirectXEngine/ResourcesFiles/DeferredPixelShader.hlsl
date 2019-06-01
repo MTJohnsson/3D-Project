@@ -9,7 +9,6 @@ struct GSOutput
 	float4 pos : SV_POSITION;
 	float3 normal : NORMAL;
 	float2 tex : TEXCOORD;
-	float3 Color : COLOR;
 	float3 worldPos : WORLDPOS;
 	float3 camPos : CAMPOS;
 

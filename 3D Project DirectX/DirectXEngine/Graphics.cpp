@@ -111,7 +111,7 @@ void Graphics::LastRender() {
 
 	deviceContext->IASetInputLayout(lastPassShaders.GetVertexShader()->GetInputLayout());
 	deviceContext->VSSetShader(lastPassShaders.GetVertexShader()->GetShader(), NULL, 0);
-	deviceContext->GSSetShader(nullptr, nullptr, 0);
+	deviceContext->GSSetShader(lastPassShaders.GetGeometryShader()->GetShader(), NULL, 0);
 	deviceContext->PSSetShader(lastPassShaders.GetPixelShader()->GetShader(), NULL, 0);
 	deviceContext->PSSetSamplers(0, 1, &samplerState);
 
@@ -138,10 +138,11 @@ void Graphics::LastRender() {
 
 	ID3D11ShaderResourceView* nullsrv = nullptr;
 
-	deviceContext->PSSetShaderResources(0, 1, &nullsrv);
-	deviceContext->PSSetShaderResources(1, 1, &nullsrv);
 	deviceContext->PSSetShaderResources(2, 1, &nullsrv);
 	deviceContext->PSSetShaderResources(3, 1, &nullsrv);
+	deviceContext->PSSetShaderResources(4, 1, &nullsrv);
+	deviceContext->PSSetShaderResources(5, 1, &nullsrv);
+	deviceContext->GSSetShader(NULL, NULL, 0);
 }
 void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
 	

@@ -3,7 +3,6 @@ struct GS_IN
 	float4 Pos : SV_POSITION;
 	float3 Normal : NORMAL;
 	float2 tex : TEXCOORD;
-	float3 Color : COLOR;
 };
 
 struct GSOutput
@@ -11,7 +10,6 @@ struct GSOutput
 	float4 pos : SV_POSITION;
 	float3 normal : NORMAL;
 	float2 tex : TEXCOORD;
-	float3 Color : COLOR;
 	float3 worldPos : WORLDPOS;
 	float3 camPos : CAMPOS;
 
@@ -51,7 +49,6 @@ void main(triangle GS_IN input[3], inout TriangleStream<GSOutput> OutputStream)
 	for (uint i = 0; i < 3; i++)
 	{
 		output.pos = mul(mvp, input[i].Pos);
-		output.Color = input[i].Color;
 		output.tex = input[i].tex;
 		output.worldPos = (float3)normalize(mul(world, input[i].Pos));
 		output.normal = normalize(mul((float3x3) world, normal));
