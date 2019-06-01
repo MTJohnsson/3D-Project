@@ -13,8 +13,8 @@ public:
 	~Skybox();
 	void DestroySkybox();
 	bool InitializeSkybox(ID3D11Device* device);
-	bool loadTexture(ID3D11Device* device, std::string filePath);
-	bool renderSkybox();
+	bool loadSkyboxTexture(ID3D11Device* device, std::string filePath);
+	bool renderSkybox(ID3D11DeviceContext* context);
 private:
 	struct SkyboxVertex {
 		float x, y, z;
