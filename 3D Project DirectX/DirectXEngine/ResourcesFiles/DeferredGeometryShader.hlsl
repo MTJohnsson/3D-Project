@@ -3,7 +3,6 @@ struct GS_IN
 	float4 Pos : SV_POSITION;
 	float3 Normal : NORMAL;
 	float2 tex : TEXCOORD;
-	float3 Color : COLOR;
 };
 
 struct GSOutput
@@ -11,7 +10,6 @@ struct GSOutput
 	float4 pos : SV_POSITION;
 	float3 normal : NORMAL;
 	float2 tex : TEXCOORD;
-	float3 Color : COLOR;
 	float3 worldPos : WORLDPOS;
 	float3 camPos : CAMPOS;
 
@@ -46,23 +44,24 @@ void main(triangle GS_IN input[3], inout TriangleStream<GSOutput> OutputStream)
 	float2 deltaUV2 = input[2].tex - input[0].tex;
 
 	matrix mvp = mul(projection, mul(view, world));
+	float3 temp = camPos;
+	float3 direction = temp - (float3)((input[0].Pos + input[1].Pos + input[2].Pos) / 3);
+	if (dot(normal, direction) >= 0.0f) {
+		for (uint i = 0; i < 3; i++)
+		{
+			output.pos = mul(mvp, input[i].Pos);
+			output.tex = input[i].tex;
+			output.worldPos = (float3)normalize(mul(world, input[i].Pos));
+			output.normal = normalize(mul((float3x3) world, normal));
+			output.camPos = normalize(camPos);
 
-
-	for (uint i = 0; i < 3; i++)
-	{
-		output.pos = mul(mvp, input[i].Pos);
-		output.Color = input[i].Color;
-		output.tex = input[i].tex;
-		output.worldPos = (float3)normalize(mul(world, input[i].Pos));
-		output.normal = normalize(mul((float3x3) world, normal));
-		output.camPos = normalize(camPos);
-
-		// normal map
-		output.edge1 = normalize(u);
-		output.edge2 = normalize(v);
-		output.deltaUV1 = deltaUV1;
-		output.deltaUV2 = deltaUV2;
-		OutputStream.Append(output);
+			// normal map
+			output.edge1 = normalize(u);
+			output.edge2 = normalize(v);
+			output.deltaUV1 = deltaUV1;
+			output.deltaUV2 = deltaUV2;
+			OutputStream.Append(output);
+		}
 	}
 
 	OutputStream.RestartStrip();

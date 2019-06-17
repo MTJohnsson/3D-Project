@@ -30,15 +30,15 @@ void main(triangle GS_IN input[3], inout TriangleStream<GS_OUT> OutputStream)
 {
 	GS_OUT output;
 
-	matrix mvp = mul(projection, mul(view, world));
+	//matrix mvp = mul(projection, mul(view, world));
 
 
 	for (uint i = 0; i < 3; i++)
 	{
-		output.Pos = mul(mvp, input[i].Pos);
+		output.Pos = input[i].Pos;
 		output.TextureCoord = input[i].TextureCoord;
-		output.worldPos = normalize(mul(world, input[i].Pos));
-		output.Normal = normalize(mul((float3x3) world, input[i].Normal));
+		output.worldPos = input[i].worldPos;
+		output.Normal = input[i].Normal;
 		output.camPos = normalize(camPos);
 
 		OutputStream.Append(output);
