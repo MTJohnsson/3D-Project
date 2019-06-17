@@ -24,10 +24,18 @@ private:
 	ID3D11Buffer* skyboxIndicies;
 	UINT skyboxIndexCount;
 
-	Texture skyboxTexture;
+	ID3D11ShaderResourceView* skyBoxCubeTexture;
+	ID3D11Texture2D* skyBoxTexture;
+	
+	Texture skyboxFront;
+	Texture skyboxBack;
+	Texture skyboxTop;
+	Texture skyboxBottom;
+	Texture skyboxLeft;
+	Texture skyboxRight;
 
 	bool InitializeSkyboxVerticies(ID3D11Device* device);
-	bool loadTexture(ID3D11Device* device, std::string filePath);
+	bool loadTexture(ID3D11Device* device, std::string filePath, Texture &side);
 	
 };
 
