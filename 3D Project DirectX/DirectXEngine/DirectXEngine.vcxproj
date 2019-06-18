@@ -142,6 +142,8 @@
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
     <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="Skybox2.cpp" />
+    <ClCompile Include="TGATexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXHelp.h" />
@@ -172,6 +174,8 @@
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="RenderWindow.h" />
     <ClInclude Include="Skybox.h" />
+    <ClInclude Include="Skybox2.h" />
+    <ClInclude Include="TGATexture.h" />
     <ClInclude Include="VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -222,7 +226,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="ResourcesFiles\SkyboxPS.hlsl" />
+    <FxCompile Include="ResourcesFiles\SkyboxPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="ResourcesFiles\SkyboxVS.hlsl" />
     <FxCompile Include="VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>

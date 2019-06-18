@@ -105,6 +105,12 @@
     <ClCompile Include="Skybox.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
+    <ClCompile Include="TGATexture.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox2.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">
@@ -186,6 +192,12 @@
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Skybox.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="TGATexture.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox2.h">
       <Filter>Header Files\Others</Filter>
     </ClInclude>
   </ItemGroup>

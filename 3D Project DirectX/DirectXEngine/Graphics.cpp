@@ -471,8 +471,14 @@ bool Graphics::InitializeShaders()
 		{"TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  }
 	};
 
+	D3D11_INPUT_ELEMENT_DESC layout3[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  }
+	};
+
 	UINT numElements = ARRAYSIZE(layout);
 	UINT numElements2 = ARRAYSIZE(layout2);
+	UINT numElements3 = ARRAYSIZE(layout3);
 	std::wstring shaderfolder = L"..\\x64\\Debug\\";
 
 
@@ -498,6 +504,10 @@ bool Graphics::InitializeShaders()
 	deferredShadersNormalMapping.CreatVertexShader(device, shaderfolder + L"DeferredVertexShader.cso", layout2, numElements2);
 	deferredShadersNormalMapping.CreatPixelShader(device, shaderfolder + L"DeferredPixelShaderNormalMapping.cso");
 	deferredShadersNormalMapping.CreatGeometryShader(device, shaderfolder + L"DeferredGeometryShader.cso");
+
+	skyboxShader.CreatVertexShader(device, shaderfolder + L"SkyboxVS.cso", layout2, numElements2);
+	skyboxShader.CreatPixelShader(device, shaderfolder + L"SkyboxPS.cso");
+
 
 	//Create sampler description for sampler state
 	D3D11_SAMPLER_DESC sampDesc;

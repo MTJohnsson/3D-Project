@@ -68,6 +68,7 @@ private:
 	int deferredBufferDisplay;
 	ConstantBuffer<BufferDisplay> bufferDisplayBuffer;
 
+
 private:
 	bool InitializeDirectX(HWND hwmd, int width, int height);
 	bool InitializeShaders();
@@ -94,5 +95,6 @@ private:
 	Shader lastPassShaders;
 	Shader deferredShaders;
 	Shader deferredShadersNormalMapping;
+	Shader skyboxShader;
 };
 #endif // !OBJMODEL_H

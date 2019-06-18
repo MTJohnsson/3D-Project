@@ -14,11 +14,18 @@ Skybox::~Skybox()
 void Skybox::DestroySkybox() {
 	this->skyboxVerticies->Release();
 	this->skyboxIndicies->Release();
-	this->skyBoxTexture->Release();
-	this->skyBoxCubeTexture->Release();
+	if (skyBoxTexture != nullptr) {
+		this->skyBoxTexture->Release();
+	}
+	if (skyBoxCubeTexture != nullptr) {
+		this->skyBoxCubeTexture->Release();
+	}
 }
 bool Skybox::InitializeSkybox(ID3D11Device* device) {
 	if (!InitializeSkyboxVerticies(device)) {
+		return false;
+	}
+	if (!loadSkyboxTexture(device, "textureTerrain.jpg")) {
 		return false;
 	}
 	return true;
@@ -98,6 +105,8 @@ bool Skybox::renderSkybox(ID3D11DeviceContext* context) {
 	}
 	context->IASetVertexBuffers(0, 1, &skyboxVerticies, &sizeOfVertex, &offset);
 	context->IASetIndexBuffer(skyboxIndicies, DXGI_FORMAT_R32_UINT, 0);
+	context->PSSetShaderResources(0, 1, &this->skyBoxCubeTexture);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	context->DrawIndexed(skyboxIndexCount, 0, 0);
 
