@@ -13,6 +13,8 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 		return false;
 	if (!bufferDisplayBuffer.Initialize(device))
 		return false;
+	if (!MatrixBuffer.Initialize(device))
+		return false;
 	if (!InitializeShaders())
 		return false;
 	if (!InitializeScene())
@@ -21,6 +23,12 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 	//objects.InitializeGameObjects(device, deviceContext, shader, shader2);
 	//objects.InitializeGameObjects(device, deviceContext, &deferredShaders, &deferredShadersNormalMapping);
 	objects.InitializeGameObjects(device, deviceContext, &deferredShadersNormalMapping, &deferredShaders);
+	
+	Sky.InitializeSphere(device, 10, 10);
+	Sky.setupRenderStates(device);
+	std::wstring skyFilename(L"textureTerrain.jpg");
+	Sky.loadCubeMap(device, skyFilename);
+
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -142,6 +150,21 @@ void Graphics::LastRender() {
 }
 void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
 	
+	Sky.updateWorld(camera.GetPositionFloat3());
+	MatrixBuffer.data.camPos = camera.GetPositionFloat3();
+	MatrixBuffer.data.projection = camera.GetProjectionMatrix();
+	MatrixBuffer.data.view = camera.GetViewMatrix();
+	MatrixBuffer.data.world = Sky.getWorld();
+	MatrixBuffer.updateConstantBuffer(deviceContext);
+	deviceContext->VSSetConstantBuffers(0, 1, MatrixBuffer.getConstantBuffer());
+	Sky.drawSkydome(deviceContext);
+
+	deviceContext->IASetInputLayout(deferredShaders.GetVertexShader()->GetInputLayout());
+	deviceContext->VSSetShader(deferredShaders.GetVertexShader()->GetShader(), NULL, 0);
+	deviceContext->GSSetShader(deferredShaders.GetGeometryShader()->GetShader(), nullptr, 0);
+	deviceContext->PSSetShader(deferredShaders.GetPixelShader()->GetShader(), NULL, 0);
+	deviceContext->RSSetState(rasterizerState);
+
 	//set depthStencil state
 	//deviceContext->OMSetDepthStencilState(nullptr, 0);
 	//deviceContext->PSSetSamplers(0, 1, &samplerState);
@@ -508,6 +531,8 @@ bool Graphics::InitializeShaders()
 	skyboxShader.CreatVertexShader(device, shaderfolder + L"SkyboxVS.cso", layout2, numElements2);
 	skyboxShader.CreatPixelShader(device, shaderfolder + L"SkyboxPS.cso");
 
+	Sky.skyDomeShader.CreatVertexShader(device, shaderfolder + L"SkydomeVS.cso", layout3, numElements3);
+	Sky.skyDomeShader.CreatPixelShader(device, shaderfolder + L"SkydomePS.cso");
 
 	//Create sampler description for sampler state
 	D3D11_SAMPLER_DESC sampDesc;

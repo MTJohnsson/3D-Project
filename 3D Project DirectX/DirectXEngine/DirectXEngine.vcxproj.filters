@@ -34,6 +34,18 @@
     <Filter Include="Source Files\Other">
       <UniqueIdentifier>{f0870692-a14f-45aa-8d03-7480a5cbf503}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Deferred">
+      <UniqueIdentifier>{f1f6a85d-e331-40ad-bffc-d6edea379bd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\LastPass">
+      <UniqueIdentifier>{dac9f0f1-257e-438d-a5ea-655eb8dfda6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Skybox Shaders">
+      <UniqueIdentifier>{395cc575-10bb-4313-ba87-b153ff576993}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Other Shaders">
+      <UniqueIdentifier>{ff76c57a-f559-4941-956c-bf0ab4616212}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -108,7 +120,7 @@
     <ClCompile Include="TGATexture.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
-    <ClCompile Include="Skybox2.cpp">
+    <ClCompile Include="SkyDome.cpp">
       <Filter>Source Files\Other</Filter>
     </ClCompile>
   </ItemGroup>
@@ -161,9 +173,6 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="VertexBuffer.h">
-      <Filter>Header Files\Others</Filter>
-    </ClInclude>
     <ClInclude Include="Lib\Clock.h">
       <Filter>Header Files\Others</Filter>
     </ClInclude>
@@ -197,49 +206,58 @@
     <ClInclude Include="TGATexture.h">
       <Filter>Header Files\Others</Filter>
     </ClInclude>
-    <ClInclude Include="Skybox2.h">
+    <ClInclude Include="SkyDome.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
+    <ClInclude Include="Lib\VertexBuffer.h">
       <Filter>Header Files\Others</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="VertexShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="ResourcesFiles\GeometryShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="PixelShaderDefault.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="ResourcesFiles\LastPassVertexShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="ResourcesFiles\LastPassPixelShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
-    <FxCompile Include="ResourcesFiles\LastPassGeometryShader.hlsl">
-      <Filter>Resource Files</Filter>
-    </FxCompile>
     <FxCompile Include="ResourcesFiles\DeferredGeometryShader.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Deferred</Filter>
     </FxCompile>
     <FxCompile Include="ResourcesFiles\DeferredPixelShader.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Deferred</Filter>
     </FxCompile>
     <FxCompile Include="ResourcesFiles\DeferredPixelShaderNormalMapping.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Deferred</Filter>
     </FxCompile>
     <FxCompile Include="ResourcesFiles\DeferredVertexShader.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Deferred</Filter>
     </FxCompile>
-    <FxCompile Include="ResourcesFiles\SkyboxVS.hlsl">
-      <Filter>Resource Files</Filter>
+    <FxCompile Include="ResourcesFiles\LastPassGeometryShader.hlsl">
+      <Filter>Resource Files\LastPass</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\LastPassPixelShader.hlsl">
+      <Filter>Resource Files\LastPass</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\LastPassVertexShader.hlsl">
+      <Filter>Resource Files\LastPass</Filter>
     </FxCompile>
     <FxCompile Include="ResourcesFiles\SkyboxPS.hlsl">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Skybox Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\SkyboxVS.hlsl">
+      <Filter>Resource Files\Skybox Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\SkydomePs.hlsl">
+      <Filter>Resource Files\Skybox Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\SkydomeVs.hlsl">
+      <Filter>Resource Files\Skybox Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\GeometryShader.hlsl">
+      <Filter>Resource Files\Other Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Resource Files\Other Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShaderDefault.hlsl">
+      <Filter>Resource Files\Other Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Resource Files\Other Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

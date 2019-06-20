@@ -12,6 +12,7 @@
 #include "GameObjects.h"
 
 #include "Mouse.h"
+#include "SkyDome.h"
 
 //Colours
 static const float cyan[4] = { 0.0f, 1.0f, 1.0f, 1.0f };
@@ -56,6 +57,7 @@ private:
 	ID3D11DeviceContext* deviceContext = nullptr;
 
 	ConstantBuffer<LIGHT> LightBuffer;
+	ConstantBuffer<PerFrameMatrices> MatrixBuffer;
 
 	//Deferred Render
 	RenderTarget renderBuffers[BUFFERS];
@@ -68,7 +70,7 @@ private:
 	int deferredBufferDisplay;
 	ConstantBuffer<BufferDisplay> bufferDisplayBuffer;
 
-
+	SkyDome Sky;
 private:
 	bool InitializeDirectX(HWND hwmd, int width, int height);
 	bool InitializeShaders();
