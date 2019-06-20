@@ -56,6 +56,10 @@ void Mesh::draw()
 
 	deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), vertexBuffer.Stride(), &offset);
 	deviceContext->Draw(indices.size(), 0);
+
+
+	//deviceContext->PSSetShaderResources(1, 1,nullptr);
+	//deviceContext->PSSetShaderResources(0, 1, nullptr);
 }
 
 Mesh::~Mesh()

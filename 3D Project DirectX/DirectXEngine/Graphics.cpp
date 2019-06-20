@@ -5,6 +5,15 @@
 #pragma comment (lib, "d3d11.lib")
 #include <d3dcompiler.h>
 #pragma comment (lib, "d3dcompiler.lib")
+
+
+Shader* Graphics::ParticlesShader = nullptr;
+Shader* Graphics::deferredShaders = nullptr;
+
+ID3D11Device* Graphics::device = nullptr;
+ID3D11DeviceContext* Graphics::deviceContext = nullptr;
+Camera* Graphics::camera = nullptr;
+
 bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
 	if (!InitializeDirectX(hwnd, width, height))
@@ -20,7 +29,7 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 	InitializeScreenQuad();
 	//objects.InitializeGameObjects(device, deviceContext, shader, shader2);
 	//objects.InitializeGameObjects(device, deviceContext, &deferredShaders, &deferredShadersNormalMapping);
-	objects.InitializeGameObjects(device, deviceContext, &deferredShadersNormalMapping, &deferredShaders);
+	objects.InitializeGameObjects(device, deviceContext, &deferredShadersNormalMapping, deferredShaders);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -64,11 +73,11 @@ void Graphics::RenderFrame(float dt, std::vector<XMFLOAT4> mousePickInfo)
 	//deviceContext->PSSetConstantBuffers(0, 1, LightBuffer.getConstantBuffer());
 
 
-	//heightDifferance = objects.render(camera.GetViewMatrix(), camera.GetProjectionMatrix(),
-	//	camera.GetPositionFloat3(), dt, mousePickInfo);	// take mouse ray to the objects in order to calculate find local space
+	//heightDifferance = objects.render(camera->GetViewMatrix(), camera->GetProjectionMatrix(),
+	//	camera->GetPositionFloat3(), dt, mousePickInfo);	// take mouse ray to the objects in order to calculate find local space
 	//
 	//// Move camera depending on the height of the ground beneath, use float that is returned from objects.render()
-	//camera.SetPosition(camera.GetPositionFloat3().x, camera.GetPositionFloat3().y - heightDifferance, camera.GetPositionFloat3().z);
+	//camera->SetPosition(camera->GetPositionFloat3().x, camera->GetPositionFloat3().y - heightDifferance, camera->GetPositionFloat3().z);
 
 	////draw objects
 	//deviceContext->GSSetShader(nullptr, nullptr, 0);
@@ -77,13 +86,13 @@ void Graphics::RenderFrame(float dt, std::vector<XMFLOAT4> mousePickInfo)
 }
 void Graphics::FirstRender() {
 
-	deviceContext->IASetInputLayout(deferredShaders.GetVertexShader()->GetInputLayout());
+	deviceContext->IASetInputLayout(deferredShaders->GetVertexShader()->GetInputLayout());
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
-	deviceContext->VSSetShader(deferredShaders.GetVertexShader()->GetShader(), NULL, 0);
+	deviceContext->VSSetShader(deferredShaders->GetVertexShader()->GetShader(), NULL, 0);
 	deviceContext->HSSetShader(nullptr, nullptr, 0);
 	deviceContext->DSSetShader(nullptr, nullptr, 0);
-	deviceContext->GSSetShader(deferredShaders.GetGeometryShader()->GetShader(), nullptr, 0);
-	deviceContext->PSSetShader(deferredShaders.GetPixelShader()->GetShader(), NULL, 0);
+	deviceContext->GSSetShader(deferredShaders->GetGeometryShader()->GetShader(), nullptr, 0);
+	deviceContext->PSSetShader(deferredShaders->GetPixelShader()->GetShader(), NULL, 0);
 	deviceContext->PSSetSamplers(0, 1, &samplerState);
 
 
@@ -102,7 +111,7 @@ void Graphics::FirstRender() {
 	deviceContext->ClearDepthStencilView(renderDepthStencil, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	deviceContext->RSSetState(rasterizerState);
+	deviceContext->RSSetState(NULL);
 	//deviceContext->RSSetState(NULL);
 }
 void Graphics::LastRender() {
@@ -153,12 +162,16 @@ void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
 	//deviceContext->DSSetShader(nullptr, nullptr, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, LightBuffer.getConstantBuffer());
 
-
-	heightDifferance = objects.render(camera.GetViewMatrix(), camera.GetProjectionMatrix(),
-		camera.GetPositionFloat3(), dt, mousePickInfo);	// take mouse ray to the objects in order to calculate find local space
+	//setViewPort();
+	if (!CullBackFace)
+		CullCamera = camera->GetPositionFloat3();
+	heightDifferance = objects.render(camera->GetViewMatrix(), camera->GetProjectionMatrix(),
+		CullCamera, dt, mousePickInfo);	// take mouse ray to the objects in order to calculate find local space
 
 	// Move camera depending on the height of the ground beneath, use float that is returned from objects.render()
-	camera.SetPosition(camera.GetPositionFloat3().x, camera.GetPositionFloat3().y - heightDifferance, camera.GetPositionFloat3().z);
+	camera->SetPosition(camera->GetPositionFloat3().x, camera->GetPositionFloat3().y - heightDifferance, camera->GetPositionFloat3().z);
+
+
 
 	//draw objects
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
@@ -297,6 +310,19 @@ void Graphics::InitializeScreenQuad() {
 	device->CreateBuffer(&indicesBufferDesc, &indexSubresourceData, &sqIndicesBuffer);
 } //Creates a quad to render the buffers to.
 
+void Graphics::setViewPort()
+{
+	D3D11_VIEWPORT vp;
+	vp.Height = (float)WIDTH;
+	vp.Width = (float)HEIGHT;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	vp.MinDepth = 0.f;
+	vp.MaxDepth = 1.f;
+	deviceContext->RSSetViewports(1, &vp);
+}
+
+
 Graphics::~Graphics()
 {
 	//classer som vi includerar
@@ -316,10 +342,9 @@ Graphics::~Graphics()
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
-	//this->shader = nullptr;
-	//this->shader2 = nullptr;
-	delete this->shader;
-	delete this->shader2;
+	delete ParticlesShader;
+	delete deferredShaders;
+	delete camera;
 	DestroyGraphicsBuffer();
 }
 
@@ -347,6 +372,7 @@ void Graphics::updateImguie(float dt)
 	ImGui::SliderFloat("Up/Down ", (float*)&distZ, -1.05f, 1.05f);
 	ImGui::SliderInt("Load Buffer: ", &deferredBufferDisplay, 0, 4);
 
+	ImGui::Checkbox("BackFaceCull", &CullBackFace);
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
 	ImGui::Render();
@@ -446,7 +472,6 @@ bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
 	ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 	rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
-
 	hr = device->CreateRasterizerState(&rasterizerDesc,&rasterizerState);
 	if (FAILED(hr)) //If error occurred
 	{
@@ -484,7 +509,7 @@ bool Graphics::InitializeShaders()
 	shader->CreatVertexShader(device, shaderfolder + L"VertexShader.cso", layout, numElements);
 	shader->CreatGeometryShader(device, shaderfolder + L"GeometryShader.cso");
 	shader->CreatPixelShader(device, shaderfolder + L"PixelShader.cso");
-	
+
 
 	shader2 = new Shader();
 	shader2->CreatVertexShader(device, shaderfolder + L"VertexShader.cso", layout, numElements);
@@ -494,15 +519,35 @@ bool Graphics::InitializeShaders()
 	lastPassShaders.CreatVertexShader(device, shaderfolder + L"LastPassVertexShader.cso", layout2, numElements2);
 	lastPassShaders.CreatGeometryShader(device, shaderfolder + L"LastPassGeometryShader.cso");
 	lastPassShaders.CreatPixelShader(device, shaderfolder + L"LastPassPixelShader.cso");
-
-	deferredShaders.CreatVertexShader(device, shaderfolder + L"DeferredVertexShader.cso", layout2, numElements2);
-	deferredShaders.CreatGeometryShader(device, shaderfolder + L"DeferredGeometryShader.cso");
-	deferredShaders.CreatPixelShader(device, shaderfolder + L"DeferredPixelShader.cso");
+	
+	deferredShaders = new Shader();
+	deferredShaders->CreatVertexShader(device, shaderfolder + L"DeferredVertexShader.cso", layout2, numElements2);
+	deferredShaders->CreatGeometryShader(device, shaderfolder + L"DeferredGeometryShader.cso");
+	deferredShaders->CreatPixelShader(device, shaderfolder + L"DeferredPixelShader.cso");
 
 	deferredShadersNormalMapping.CreatVertexShader(device, shaderfolder + L"DeferredVertexShader.cso", layout2, numElements2);
 	deferredShadersNormalMapping.CreatPixelShader(device, shaderfolder + L"DeferredPixelShaderNormalMapping.cso");
 	deferredShadersNormalMapping.CreatGeometryShader(device, shaderfolder + L"DeferredGeometryShader.cso");
 
+
+	this->ParticlesShader = new Shader();
+	D3D11_INPUT_ELEMENT_DESC layout3[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  },
+	};
+	UINT numElements3 = ARRAYSIZE(layout3);
+
+	bool completed = true;
+	completed = ParticlesShader->CreatVertexShader(device, shaderfolder + L"ParticleVS.cso", layout3, numElements3);
+	completed = ParticlesShader->CreatPixelShader(device, shaderfolder + L"ParticlePS.cso");
+	completed = ParticlesShader->CreatGeometryShader(device, shaderfolder + L"ParticleGS.cso");
+
+	if (!completed)
+	{
+		MessageBox(NULL, "ParticlesShader Failed.",
+			"CreateVertexBuffer Error", MB_OK);
+		return false;
+	}
 	//Create sampler description for sampler state
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
@@ -543,9 +588,19 @@ bool Graphics::InitializeShaders()
 }
 bool Graphics::InitializeScene()
 {
+
+	camera = new Camera();
 	XMFLOAT3 pos(10.f, 60.0f, 50.f);
-	XMVECTOR position = XMLoadFloat3(&pos);
-	camera.SetPosition(position);
+//	XMVECTOR position = XMLoadFloat3(&pos);
+	camera->SetPosition(pos);
 	
 	return true;
+}
+
+bool Graphics::ResetShaders()
+{
+	deviceContext->VSSetShader(NULL, NULL, 0);
+	deviceContext->GSSetShader(NULL, nullptr, 0);
+	deviceContext->PSSetShader(NULL, NULL, 0);
+	return false;
 }

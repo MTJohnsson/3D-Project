@@ -33,7 +33,7 @@ void Engine::Update()
 	if (state.rightButton)
 	{
  		mouse->SetMode(Mouse::MODE_RELATIVE);
-		gfx.camera.AdjustRotation((float)state.y * 0.05f * dt,
+		gfx.camera->AdjustRotation((float)state.y * 0.05f * dt,
 			(float)state.x * 0.05f * dt, 0);
 	}
 	// Mouse picking
@@ -43,7 +43,7 @@ void Engine::Update()
 		float mouseX = state.x;
 		float mouseY = state.y;
 
-		const XMMATRIX& proj = gfx.camera.GetProjectionMatrix();
+		const XMMATRIX& proj = gfx.camera->GetProjectionMatrix();
 		Vector4 row0(proj.r[0]);
 		Vector4 row1(proj.r[1]);
 
@@ -60,11 +60,11 @@ void Engine::Update()
 		Vector3 rayDir(mouseX, mouseY, 1.f);	// u in slide 16 (direction)
 
 		// VIEW SPACE
-		XMMATRIX invertedProjection = XMMatrixInverse(NULL, gfx.camera.GetProjectionMatrix());
+		XMMATRIX invertedProjection = XMMatrixInverse(NULL, gfx.camera->GetProjectionMatrix());
 		Vector4 viewCoord = XMVector4Transform(projCoord, invertedProjection);
 		
 		// WORLD SPACE
-		XMMATRIX invertedView = XMMatrixInverse(NULL, gfx.camera.GetViewMatrix()); // V^-1
+		XMMATRIX invertedView = XMMatrixInverse(NULL, gfx.camera->GetViewMatrix()); // V^-1
 
 		Vector4 rayOriginW = XMVector4Transform(Vector4(rayOrigin.x, rayOrigin.y, rayOrigin.z, 1.f), invertedView); 
 		Vector4 rayDirW    = XMVector4Transform(Vector4(rayDir.x, rayDir.y, rayDir.z, 0.f), invertedView); 
@@ -72,7 +72,7 @@ void Engine::Update()
 		mousePickInfo.emplace_back(XMFLOAT4(rayOriginW.x, rayOriginW.y, rayOriginW.z, rayOriginW.w));
 		mousePickInfo.emplace_back(XMFLOAT4(rayDirW.x, rayDirW.y, rayDirW.z, rayDirW.w));
 
-		//Vector3 campos = gfx.camera.GetPositionFloat3();
+		//Vector3 campos = gfx.camera->GetPositionFloat3();
 
 	}
 	else
@@ -84,25 +84,25 @@ void Engine::Update()
 
 	if (GetAsyncKeyState(0x41)) {//A
 		XMFLOAT3 adjust(-0.01f * dt, 0.0f, 0.0f);
-		gfx.camera.AdjustPosition(gfx.camera.GetLeftVector() * 0.006 * dt);
+		gfx.camera->AdjustPosition(gfx.camera->GetLeftVector() * 0.006 * dt);
 	}
 	if (GetAsyncKeyState(0x44)) { //D
 		XMFLOAT3 adjust(0.01f * dt, 0.0f, 0.0f);
-		gfx.camera.AdjustPosition(gfx.camera.GetRightVector() * 0.006 * dt);
+		gfx.camera->AdjustPosition(gfx.camera->GetRightVector() * 0.006 * dt);
 	}
 	if (GetAsyncKeyState(0x57)) {//W
 		XMFLOAT3 adjust(0.0f, 0.0f, 0.01f * dt);
-		gfx.camera.AdjustPosition(gfx.camera.GetForwardVector()*0.006*dt);
+		gfx.camera->AdjustPosition(gfx.camera->GetForwardVector()*0.006*dt);
 	}
 	if (GetAsyncKeyState(0x53)) { //S
 		XMFLOAT3 adjust(0.00f, 0.0f, -0.01f * dt);
-		gfx.camera.AdjustPosition(gfx.camera.GetBackwardVector() * 0.006 * dt);
+		gfx.camera->AdjustPosition(gfx.camera->GetBackwardVector() * 0.006 * dt);
 	}
 	if (GetAsyncKeyState(VK_SPACE)) { //backspace 
-		gfx.camera.AdjustPosition(0.0f, 0.01f * dt, 0.0f);
+		gfx.camera->AdjustPosition(0.0f, 0.01f * dt, 0.0f);
 	}
 	if (GetAsyncKeyState(VK_CONTROL)) { //backspace 
-		gfx.camera.AdjustPosition(0.0f, -0.01f * dt, 0.0f);
+		gfx.camera->AdjustPosition(0.0f, -0.01f * dt, 0.0f);
 	}
 
 	gfx.RenderFrame(dt, mousePickInfo);

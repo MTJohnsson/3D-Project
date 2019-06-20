@@ -8,7 +8,7 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx11.h"
 
-#include "Input/Camera.h"
+#include "Input/camera.h"
 #include "GameObjects.h"
 
 #include "Mouse.h"
@@ -46,14 +46,23 @@ public:
 	bool InitializeGraphicsBuffer();
 	void DestroyGraphicsBuffer();
 	void InitializeScreenQuad();
+	void setViewPort();
 
-	Camera camera;
+	//static Shader* shader;		// outputs texture
+	static Shader* ParticlesShader;
+	static Shader* deferredShaders;
+	static ID3D11Device* device;// = nullptr;
+	static ID3D11DeviceContext* deviceContext;// = nullptr;
+	static Camera* camera;
+
+	bool CullBackFace = false;
+	XMFLOAT3 CullCamera;
 private:
 	void updateImguie(float dt);
 	GameObjects objects;
 
-	ID3D11Device* device = nullptr;
-	ID3D11DeviceContext* deviceContext = nullptr;
+	//ID3D11Device* device = nullptr;
+	//ID3D11DeviceContext* deviceContext = nullptr;
 
 	ConstantBuffer<LIGHT> LightBuffer;
 
@@ -72,15 +81,15 @@ private:
 	bool InitializeDirectX(HWND hwmd, int width, int height);
 	bool InitializeShaders();
 	bool InitializeScene();
-
+	bool ResetShaders();
 	//ID3D11Device* device; //create buffers
 	//ID3D11DeviceContext* deviceContext; //set diffrent resources to renderting
 	//we set them to diffrent textures
 	IDXGISwapChain* swapchain; //swap out our frames when we render it, 
 	ID3D11RenderTargetView* renderTargetView; // for our window
 
-	Shader *shader;		// outputs texture
-	Shader *shader2;
+	//Shader *shader;		// outputs texture
+	//Shader *shader2;
 	ID3D11RasterizerState* rasterizerState;
 	ID3D11Texture2D* depthStencilBuffer;
 	ID3D11DepthStencilView* depthStencilView;
@@ -92,7 +101,6 @@ private:
 
 	//Deferred Render Shaders
 	Shader lastPassShaders;
-	Shader deferredShaders;
 	Shader deferredShadersNormalMapping;
 };
 #endif // !OBJMODEL_H

@@ -5,25 +5,20 @@
 #include "Mesh/Primitive.h"
 #include "Lights.h"
 #include "Mesh/Terrain.h"
-
+#include "Particle.h"
 #include <SimpleMath.h>
+#include "DirectXHelp.h"
 using namespace DirectX::SimpleMath;
 
 //Separate into per frame and per object
-struct PerFrameMatrices {
-	XMMATRIX world;
-	XMMATRIX view;
-	XMMATRIX projection;
-	XMFLOAT3 camPos;
-	float padding;	//4 nu 16
-};
-
 class GameObjects
 {
 private:
 	vector<Mesh> meshes;
 	vector<Primitive> primitives;
 	Terrain* terrain;
+
+	Particle* particles;
 
 	ID3D11Device* device = nullptr;
 	ID3D11DeviceContext* deviceContext = nullptr;

@@ -1,13 +1,12 @@
 #include "Terrain.h"
 #include <iostream>
 #include <fstream>
+#include "../Graphics.h"
 using namespace std;
-Terrain::Terrain(ID3D11Device* device, ID3D11DeviceContext *deviceContext, Shader *shader, Shader *shader2)
+Terrain::Terrain(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 	this->device = device;
 	this->deviceContext = deviceContext;
-
-	shaderPtr = shader2;
 
 
 	ofstream myfile("turnamn.txt");
@@ -49,13 +48,12 @@ Terrain::Terrain(ID3D11Device* device, ID3D11DeviceContext *deviceContext, Shade
 	data.pSysMem = &this->vertex[0];
 	HRESULT hr = device->CreateBuffer(&bufferDesc, &data,
 		&vertexBuffer);
-	if (FAILED(hr)){
+	if (FAILED(hr)) {
 		MessageBox(NULL, "D3D11CreateDevice Failed.",
 			"CreateVertexBuffer Error", MB_OK);
 	}
 
 	hr = CreateWICTextureFromFile(device, L"textureTerrain.jpg", nullptr, texture.GetAddressOf());
-	//this->deviceContext->PSSetShaderResources(0, 1, texture.GetAddressOf());
 }
 
 void Terrain::draw()
@@ -66,11 +64,18 @@ void Terrain::draw()
 
 
 	//this->deviceContext->IASetIndexBuffer(indicesbuffer, DXGI_FORMAT_R32_UINT, 0);
+	ID3D11ShaderResourceView* const pSRV[1] = { NULL };
+
+	Graphics::deviceContext->PSSetShaderResources(0, 1, pSRV);
+	Graphics::deviceContext->PSSetShaderResources(1, 1, pSRV);
+	Graphics::deviceContext->VSSetShaderResources(0, 1, pSRV);
 
 
-	this->deviceContext->VSSetShader(shaderPtr->GetVertexShader()->GetShader(), NULL, 0);
-	this->deviceContext->GSSetShader(shaderPtr->GetGeometryShader()->GetShader(), nullptr, 0);
-	this->deviceContext->PSSetShader(shaderPtr->GetPixelShader()->GetShader(), NULL, 0);
+	this->deviceContext->VSSetShader(Graphics::deferredShaders->GetVertexShader()->GetShader(), NULL, 0);
+	this->deviceContext->GSSetShader(Graphics::deferredShaders->GetGeometryShader()->GetShader(), nullptr, 0);
+	this->deviceContext->PSSetShader(Graphics::deferredShaders->GetPixelShader()->GetShader(), NULL, 0);
+
+	//this->deviceContext->PSSetShaderResources(0, 1, texture.GetAddressOf());
 
 	this->deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	this->deviceContext->Draw(this->indCount, 0);
@@ -94,9 +99,9 @@ void Terrain::generateIndex()
 
 			if (v.y == 0)
 			{
-				v.r = 0.0f;
+				/*v.r = 0.0f;
 				v.g = 0.0f;
-				v.b = 1.0f;
+				v.b = 1.0f;*/
 
 				if (texC == 0 || texC == 1)
 				{
@@ -113,9 +118,9 @@ void Terrain::generateIndex()
 			}
 			else
 			{
-				v.r = 0.0f;
+				/*v.r = 0.0f;
 				v.g = 0.5f;
-				v.b = 0.0f;
+				v.b = 0.0f;*/
 
 				if (texC == 0)
 				{
@@ -302,11 +307,11 @@ void Terrain::generateVertex()
 	for (int i = 0; i < this->indCount; i += 6)
 	{
 		this->vertices[i] = c;
-		this->vertices[i+1] = c + this->TERR_LENGTH;
-		this->vertices[i+2] = c + this->TERR_LENGTH + 1;
-		this->vertices[i+3] = c;
-		this->vertices[i+4] = c + this->TERR_LENGTH + 1;
-		this->vertices[i+5] = c + 1;
+		this->vertices[i + 1] = c + this->TERR_LENGTH;
+		this->vertices[i + 2] = c + this->TERR_LENGTH + 1;
+		this->vertices[i + 3] = c;
+		this->vertices[i + 4] = c + this->TERR_LENGTH + 1;
+		this->vertices[i + 5] = c + 1;
 
 		c++;
 		l++;
@@ -334,7 +339,7 @@ bool Terrain::readFromFile()
 	std::ifstream heightMap("example.txt");
 	std::string y;
 	std::string line;
-	
+
 	int c2 = 0;
 
 	if (!heightMap.is_open())
@@ -408,14 +413,14 @@ void Terrain::normalize(XMFLOAT3 & vector)
 XMFLOAT3 Terrain::cross(const XMFLOAT3 & vector1, const XMFLOAT3 & vector2)
 {
 	// Cross Product ~~ A x B = (a2b3 - a3b2, a3b1 - a1b3, a1b2 - a2b1)
-	return XMFLOAT3(vector1.y*vector2.z - vector1.z*vector2.y, vector1.z*vector2.x - vector1.x*vector2.z, vector1.x*vector2.y - vector1.y*vector2.x);
+	return XMFLOAT3(vector1.y * vector2.z - vector1.z * vector2.y, vector1.z * vector2.x - vector1.x * vector2.z, vector1.x * vector2.y - vector1.y * vector2.x);
 }
 
 float Terrain::dot(const XMFLOAT3 & vector1, const XMFLOAT3 & vector2)
 {
 	// Dot Product ~~ A • B = a1b1 + a2b2 + a3b3
 	//return (vector1.x*vector2.x + vector1.y*vector2.y + vector1.z*vector2.z);
-	return (vector1.x*vector2.x + vector1.y*vector2.y + vector1.z*vector2.z);
+	return (vector1.x * vector2.x + vector1.y * vector2.y + vector1.z * vector2.z);
 }
 
 void Terrain::findNearestVertecies(XMFLOAT3 camPos)
@@ -462,6 +467,4 @@ Terrain::~Terrain()
 		vertexBuffer->Release();
 	}
 
-	this->shaderPtr = nullptr;
-	delete this->shaderPtr;
 }

@@ -30,7 +30,7 @@ struct Vertex3
 class Terrain :public Transform/*, public LoadObj*/
 {
 public:
-	Terrain(ID3D11Device *device, ID3D11DeviceContext *deviceContext, Shader *shader, Shader *shader2);
+	Terrain(ID3D11Device *device, ID3D11DeviceContext *deviceContext);
 	virtual ~Terrain();
 	
 	void draw();

@@ -13,12 +13,15 @@ bool GameObjects::InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContex
 	meshes.push_back(sphere);
 	meshes[0].setPosition(10.f, 46.1f, 62.f);
 
-	terrain = new Terrain(device, deviceContext, shader, shader2);
+	terrain = new Terrain(device, deviceContext);
 
 	//CreatePrimitive(CUBE);
 
 	if (!constantBuffer.Initialize(device))
 		return false;
+
+	particles = new Particle();
+	
 
 	return true;
 }
@@ -41,14 +44,15 @@ float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, f
 	// return this float to Graphics
 
 	gIncrement += dt*speed;
-	constantBuffer.data.camPos = XMFLOAT3(camPos);
-	constantBuffer.data.view = view;
-	constantBuffer.data.projection = projection;
+	//constantBuffer.data.camPos = camPos;
+	//constantBuffer.data.view = view;
+	//constantBuffer.data.projection = projection;
 	
 	//LightBuffer->updateConstantBuffer(deviceContext);
 	//deviceContext->UpdateSubresource( *LightBuffer->getConstantBuffer(), 0, nullptr, LightBuffer, 0, 0);
 	//deviceContext->PSSetConstantBuffers(0, 1, LightBuffer->getConstantBuffer());
 	
+
 	for (int i = 0; i < meshes.size(); i++)
 	{
 		// collision control - if hit -> rotate
@@ -97,6 +101,12 @@ float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, f
 	this->deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
 	this->terrain->draw();
 
+	constantBuffer.data.camPos = camPos;
+	constantBuffer.data.view = view;
+	constantBuffer.data.projection = projection;
+	particles->draw(constantBuffer);
+	
+
 	return heightDifferance;
 }
 
@@ -108,4 +118,5 @@ GameObjects::~GameObjects()
 	delete this->terrain;
 	primitives.clear();
 	this->constantBuffer.release();
+	delete this->particles;
 }

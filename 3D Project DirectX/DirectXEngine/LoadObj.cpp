@@ -216,8 +216,13 @@ bool LoadObj::Initialize(ID3D11Device *device, ID3D11DeviceContext *deviceContex
 {
 	this->device = device;
 	loadOBJ(file);
-	vertexBuffer.Initialize(device, indices.data(), indices.size());
-
+	HRESULT hr = vertexBuffer.Initialize(device, indices.data(), indices.size());
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "vertexBuffer  loadOBJ Failed.",
+			"Create buffer Error", MB_OK);
+		return false;
+	}
 	//add texture if there are non
 	if (textures.size() == NULL) {
 		Texture tex;
