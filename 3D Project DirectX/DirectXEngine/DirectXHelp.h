@@ -10,8 +10,8 @@
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;//screen aspect
 
-#define WIDTH  800
-#define HEIGHT  600
+#define WIDTH  1280
+#define HEIGHT  1024
 
 struct LightPixelShader {
 	float lightType;//4 nu 16

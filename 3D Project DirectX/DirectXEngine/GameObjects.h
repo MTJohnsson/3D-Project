@@ -14,7 +14,6 @@ using namespace DirectX::SimpleMath;
 class GameObjects
 {
 private:
-	vector<Mesh> meshes;
 	vector<Primitive> primitives;
 	Terrain* terrain;
 
@@ -56,10 +55,11 @@ private:
 	}
 
 public:
+	vector<Mesh> meshes;
 	//GameObjects();
 	bool InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContext * deviceContext, Shader *shader, Shader *shader2);
 	bool CreatePrimitive(PRIMITIVIES primitivies);
-	float render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt, std::vector<XMFLOAT4> mousePickInfo);
+	float render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt);
 	~GameObjects();
 };
 #endif // !OBJMODEL_H

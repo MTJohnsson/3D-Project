@@ -18,6 +18,15 @@ struct Vertex
 	XMFLOAT2 TextCoord;
 	XMFLOAT3 Color;
 };
+struct Sphere
+{
+	float radius;
+	XMFLOAT2 Max;
+	XMFLOAT2 Min;
+	void calculateRadius();
+};
+
+
 class LoadObj
 {
 protected:
@@ -43,6 +52,7 @@ public:
 	bool loadOBJ(std::string& file);
 	bool Initialize(ID3D11Device *device, ID3D11DeviceContext *deviceContext, string file);
 	~LoadObj();
+	Sphere sphere;
 };
 
 

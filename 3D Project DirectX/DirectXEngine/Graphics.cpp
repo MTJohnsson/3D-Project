@@ -46,10 +46,10 @@ bool my_tool_active = true;
 float dist = 0.0f;
 float distZ = 0.0f;
 float heightDifferance = 0;
-void Graphics::RenderFrame(float dt, std::vector<XMFLOAT4> mousePickInfo)
+void Graphics::RenderFrame(float dt, float x, float y)
 {
 	FirstRender();
-	DrawPass(dt, mousePickInfo);
+	DrawPass(dt, x,y);
 	LastRender();
 	//deviceContext->PSSetConstantBuffers(0, 1, objects.LightBuffer->getConstantBuffer());
 
@@ -153,7 +153,8 @@ void Graphics::LastRender() {
 	deviceContext->PSSetShaderResources(5, 1, &nullsrv);
 	deviceContext->GSSetShader(NULL, NULL, 0);
 }
-void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
+
+void Graphics::DrawPass(float dt, float x, float y) {
 	
 	//set depthStencil state
 	//deviceContext->OMSetDepthStencilState(nullptr, 0);
@@ -166,12 +167,12 @@ void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
 	if (!CullBackFace)
 		CullCamera = camera->GetPositionFloat3();
 	heightDifferance = objects.render(camera->GetViewMatrix(), camera->GetProjectionMatrix(),
-		CullCamera, dt, mousePickInfo);	// take mouse ray to the objects in order to calculate find local space
+		CullCamera, dt);	// take mouse ray to the objects in order to calculate find local space
 
 	// Move camera depending on the height of the ground beneath, use float that is returned from objects.render()
 	camera->SetPosition(camera->GetPositionFloat3().x, camera->GetPositionFloat3().y - heightDifferance, camera->GetPositionFloat3().z);
 
-
+	Picking(x, y);
 
 	//draw objects
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
@@ -322,6 +323,80 @@ void Graphics::setViewPort()
 	deviceContext->RSSetViewports(1, &vp);
 }
 
+XMFLOAT2 MousePosition;
+void Graphics::Picking(float x, float y)
+{
+	if (x == -1 || y ==-1)
+		return;
+	
+	XMFLOAT4X4 P;
+	XMStoreFloat4x4(&P, camera->GetProjectionMatrix());
+
+	// Compute picking ray in view space.
+	float vx = (+2.0f * x / 1280 - 1.0f) / P(0, 0);
+	float vy = (-2.0f * y / 1024 + 1.0f) / P(1, 1);
+	MousePosition.x = vx;
+	MousePosition.y = vy;
+	// Ray definition in view space.
+	XMVECTOR rayOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+	XMVECTOR rayDir = XMVectorSet(vx, vy, 1.0f, 0.0f);
+
+	XMMATRIX V = camera->GetViewMatrix();
+	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(V), V);
+
+
+	//check objects
+	XMMATRIX W = objects.meshes[0].getWorld();
+	
+	XMMATRIX invWorld = XMMatrixInverse(&XMMatrixDeterminant(W), W);
+	// Tranform ray to vi space of Mesh.
+	XMMATRIX toLocal = XMMatrixMultiply(invView, invWorld);
+
+	rayOrigin = XMVector3TransformCoord(rayOrigin, toLocal);
+	rayDir = XMVector3TransformNormal(rayDir, toLocal);
+
+	// Make the ray direction unit length for the intersection tests.
+	rayDir = XMVector3Normalize(rayDir);
+
+	XMFLOAT3 o =objects.meshes[0].getPosition();
+	XMVECTOR object = XMVectorSet(o.x, o.y+1, o.z, 1.0f);
+	
+	rayOrigin = XMVectorSubtract(object, rayOrigin);
+	
+	XMFLOAT4 rOrigin;
+	XMStoreFloat4(&rOrigin, rayOrigin);
+	XMFLOAT4 rDir;
+	XMStoreFloat4(&rDir, rayDir);
+	
+
+	float radius = objects.meshes[0].sphere.radius;
+	bool hit = RaySphereIntersect(rOrigin, rDir, o, radius);
+	if (hit)
+	{
+		objects.meshes[0].Hit(true);
+	}
+	else
+		objects.meshes[0].Hit(false);
+}
+
+bool Graphics::RaySphereIntersect(XMFLOAT4 rayOrigin, XMFLOAT4 rayDirection, XMFLOAT3 pos, float radius)
+{
+	XMFLOAT3 oc = XMFLOAT3(rayOrigin.x, rayOrigin.y, rayOrigin.z)- objects.meshes[0].getPosition();
+	float b = dot(XMFLOAT3(rayDirection.x, rayDirection.y, rayDirection.z), oc);
+
+	float c = dot(oc, oc)- (radius*radius);
+	if ((b * b) - c <= 0)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+	return false;
+	return true;
+}
+
 
 Graphics::~Graphics()
 {
@@ -348,6 +423,7 @@ Graphics::~Graphics()
 	DestroyGraphicsBuffer();
 }
 
+
 void Graphics::updateImguie(float dt)
 {
 
@@ -371,8 +447,10 @@ void Graphics::updateImguie(float dt)
 	ImGui::SliderFloat("Dist", (float*)&dist, -10.05f, 10.05f);
 	ImGui::SliderFloat("Up/Down ", (float*)&distZ, -1.05f, 1.05f);
 	ImGui::SliderInt("Load Buffer: ", &deferredBufferDisplay, 0, 4);
-
 	ImGui::Checkbox("BackFaceCull", &CullBackFace);
+
+	ImGui::Text("MousePosition ( %f , %f )", MousePosition.x, MousePosition.y);
+
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
 	ImGui::Render();
@@ -604,3 +682,4 @@ bool Graphics::ResetShaders()
 	deviceContext->PSSetShader(NULL, NULL, 0);
 	return false;
 }
+

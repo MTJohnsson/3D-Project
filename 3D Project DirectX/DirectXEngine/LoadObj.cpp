@@ -100,6 +100,15 @@ XMFLOAT3 LoadObj::ConvertString(string &f1, string &f2, string& f3)
 	vertex.y = atof(f2.c_str());
 	vertex.z = atof(f3.c_str());
 
+	if (sphere.Max.x < vertex.x)
+		sphere.Max.x = vertex.x;
+	if(sphere.Max.y < vertex.y)
+		sphere.Max.y = vertex.y;
+
+	if (sphere.Min.x > vertex.x)
+		sphere.Min.x = vertex.x;
+	if (sphere.Min.y > vertex.y)
+		sphere.Min.y = vertex.y;
 	return vertex;
 }
 XMFLOAT2 LoadObj::ConvertString(string & f1, string & f2)
@@ -230,9 +239,16 @@ bool LoadObj::Initialize(ID3D11Device *device, ID3D11DeviceContext *deviceContex
 		tex.LoadDefaultTexture(device, DEFAULT);
 		textures.push_back(tex);
 	}
+	sphere.calculateRadius();
 	return true;
 }
 
 LoadObj::~LoadObj()
 {
+}
+
+void Sphere::calculateRadius()
+{
+	this->radius = abs(Max.x - Min.x);
+	this->radius  = radius/ 2;
 }
