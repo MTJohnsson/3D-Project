@@ -50,7 +50,11 @@ public:
 	//picking
 	void Picking(float x, float y);
 	bool RaySphereIntersect(XMFLOAT4 rayOrigin, XMFLOAT4 rayDirection, XMFLOAT3 pos, float radius);
+	float RayTriangle(XMVECTOR pickRayInWorldSpacePos,
+		XMVECTOR pickRayInWorldSpaceDir,
+		XMMATRIX& worldSpace);
 
+	bool PointInTriangle(XMVECTOR& triV1, XMVECTOR& triV2, XMVECTOR& triV3, XMVECTOR& point);
 	//static Shader* shader;		// outputs texture
 	static Shader* ParticlesShader;
 	static Shader* deferredShaders;

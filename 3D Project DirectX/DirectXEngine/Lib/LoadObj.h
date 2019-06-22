@@ -33,13 +33,15 @@ protected:
 	ID3D11Device *device = nullptr;
 	VertexBuffer<Vertex> vertexBuffer;
 	vector<Texture> textures;
-	std::vector<Vertex> indices;
+	std::vector<Vertex> vertices;
 
 	int numberOfTriangles = 0;
+
+	std::vector<XMFLOAT3> position;
+	std::vector<XMFLOAT3> Normal;
+	std::vector<XMFLOAT2> TexCoord;
 private:
-	std::vector<XMFLOAT3> vertice;
-	std::vector<XMFLOAT3> NormalArray;
-	std::vector<XMFLOAT2> TexCoordArray;
+
 
 	//loader functions
 	bool readMtlFile(string mtlName);

@@ -331,7 +331,7 @@ void Graphics::Picking(float x, float y)
 	
 	XMFLOAT4X4 P;
 	XMStoreFloat4x4(&P, camera->GetProjectionMatrix());
-
+	/*
 	// Compute picking ray in view space.
 	float vx = (+2.0f * x / 1280 - 1.0f) / P(0, 0);
 	float vy = (-2.0f * y / 1024 + 1.0f) / P(1, 1);
@@ -368,7 +368,6 @@ void Graphics::Picking(float x, float y)
 	XMFLOAT4 rDir;
 	XMStoreFloat4(&rDir, rayDir);
 	
-
 	float radius = objects.meshes[0].sphere.radius;
 	bool hit = RaySphereIntersect(rOrigin, rDir, o, radius);
 	if (hit)
@@ -376,7 +375,47 @@ void Graphics::Picking(float x, float y)
 		objects.meshes[0].Hit(true);
 	}
 	else
+		objects.meshes[0].Hit(false);*/
+
+
+	XMVECTOR pickRayInViewSpaceDir = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMVECTOR pickRayInViewSpacePos = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+
+	float PRVecX, PRVecY, PRVecZ;
+	//Transform 2D pick position on screen space to 3D ray in View space
+
+	PRVecX = (+2.0f * x / 1280 - 1.0f) / P(0, 0);
+	PRVecY = (-2.0f * y / 1024 + 1.0f) / P(1, 1);
+	MousePosition.x = PRVecX;
+	MousePosition.y = PRVecY;
+
+	PRVecZ = 1.0f;  //View space's Z direction ranges from 0 to 1, so we set 1 since the ray goes "into" the screen
+
+	pickRayInViewSpaceDir = XMVectorSet(PRVecX, PRVecY, PRVecZ, 0.0f);
+
+	//Uncomment this line if you want to use the center of the screen (client area)
+	//to be the point that creates the picking ray (eg. first person shooter)
+	//pickRayInViewSpaceDir = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+
+	// Transform 3D Ray from View space to 3D ray in World space
+	XMMATRIX pickRayToWorldSpaceMatrix;
+	XMVECTOR matInvDeter;   //We don't use this, but the xna matrix inverse function requires the first parameter to not be null
+
+	pickRayToWorldSpaceMatrix = XMMatrixInverse(&matInvDeter, camera->GetViewMatrix());   //Inverse of View Space matrix is World space matrix
+
+	XMVECTOR pickRayInWorldSpacePos = XMVector3TransformCoord(pickRayInViewSpacePos, pickRayToWorldSpaceMatrix);
+	XMVECTOR pickRayInWorldSpaceDir = XMVector3TransformNormal(pickRayInViewSpaceDir, pickRayToWorldSpaceMatrix);
+	pickRayInWorldSpaceDir = XMVector3Normalize(pickRayInWorldSpaceDir);
+
+
+	int distanse = RayTriangle(pickRayInWorldSpacePos, pickRayInWorldSpaceDir, objects.meshes[0].getWorld());
+	if (distanse > 0) 
+	{
+		objects.meshes[0].Hit(true);
+	}
+	else {
 		objects.meshes[0].Hit(false);
+	}
 }
 
 bool Graphics::RaySphereIntersect(XMFLOAT4 rayOrigin, XMFLOAT4 rayDirection, XMFLOAT3 pos, float radius)
@@ -395,6 +434,113 @@ bool Graphics::RaySphereIntersect(XMFLOAT4 rayOrigin, XMFLOAT4 rayDirection, XMF
 	}
 	return false;
 	return true;
+}
+
+float Graphics::RayTriangle(XMVECTOR pickRayInWorldSpacePos, XMVECTOR pickRayInWorldSpaceDir, XMMATRIX& worldSpace)
+{
+	//pick vertices
+	//auto vertices = (Vertex*)objects.meshes[0].vBuffer().GetAddressOf();
+	auto vertices = objects.meshes[0].vertic();
+	UINT triCount = objects.meshes[0].IndexCount;
+	float tMin = 0.0f;
+	for (UINT i = 0; i < triCount / 3; i++)
+	{
+		UINT i0 = i * 3 + 0;
+		UINT i1 = i * 3 + 1;
+		UINT i2 = i * 3 + 2;
+
+		// Vertices for this triangle.
+		XMVECTOR v0 = XMLoadFloat3(&vertices[i0].Position);
+		XMVECTOR v1 = XMLoadFloat3(&vertices[i1].Position);
+		XMVECTOR v2 = XMLoadFloat3(&vertices[i2].Position);
+
+		//Transform the vertices to world space
+		v0 = XMVector3TransformCoord(v0, worldSpace);
+		v1 = XMVector3TransformCoord(v1, worldSpace);
+		v2 = XMVector3TransformCoord(v2, worldSpace);
+
+
+		//Find the normal using U, V coordinates (two edges)
+		XMVECTOR U = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+		XMVECTOR V = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+		XMVECTOR faceNormal = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+
+		U = v1 - v0;
+		V = v2 - v0;
+
+		//Compute face normal by crossing U, V
+		faceNormal = XMVector3Cross(U, V);
+
+		faceNormal = XMVector3Normalize(faceNormal);
+
+		//Calculate a point on the triangle for the plane equation
+		XMVECTOR triPoint = v0;
+
+		//Get plane equation ("Ax + By + Cz + D = 0") Variables
+		float tri1A = XMVectorGetX(faceNormal);
+		float tri1B = XMVectorGetY(faceNormal);
+		float tri1C = XMVectorGetZ(faceNormal);
+		float tri1D = (-tri1A * XMVectorGetX(triPoint) - tri1B * XMVectorGetY(triPoint) - tri1C * XMVectorGetZ(triPoint));
+
+		//Now we find where (on the ray) the ray intersects with the triangles plane
+		float ep1, ep2, t = 0.0f;
+		float planeIntersectX, planeIntersectY, planeIntersectZ = 0.0f;
+		XMVECTOR pointInPlane = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+
+		ep1 = (XMVectorGetX(pickRayInWorldSpacePos) * tri1A) + (XMVectorGetY(pickRayInWorldSpacePos) * tri1B) + (XMVectorGetZ(pickRayInWorldSpacePos) * tri1C);
+		ep2 = (XMVectorGetX(pickRayInWorldSpaceDir) * tri1A) + (XMVectorGetY(pickRayInWorldSpaceDir) * tri1B) + (XMVectorGetZ(pickRayInWorldSpaceDir) * tri1C);
+
+		//Make sure there are no divide-by-zeros
+		if (ep2 != 0.0f)
+			t = -(ep1 + tri1D) / (ep2);
+
+		if (t > 0.0f)    //Make sure you don't pick objects behind the camera
+		{
+			//Get the point on the plane
+			planeIntersectX = XMVectorGetX(pickRayInWorldSpacePos) + XMVectorGetX(pickRayInWorldSpaceDir) * t;
+			planeIntersectY = XMVectorGetY(pickRayInWorldSpacePos) + XMVectorGetY(pickRayInWorldSpaceDir) * t;
+			planeIntersectZ = XMVectorGetZ(pickRayInWorldSpacePos) + XMVectorGetZ(pickRayInWorldSpaceDir) * t;
+
+			pointInPlane = XMVectorSet(planeIntersectX, planeIntersectY, planeIntersectZ, 0.0f);
+
+			//Call function to check if point is in the triangle
+			if (PointInTriangle(v0, v1, v2, pointInPlane))
+			{
+				//Return the distance to the hit, so you can check all the other pickable objects in your scene
+				//and choose whichever object is closest to the camera
+				return t / 2.0f;
+			}
+		}
+	}
+	return -1;
+}
+
+bool Graphics::PointInTriangle(XMVECTOR& triV1, XMVECTOR& triV2, XMVECTOR& triV3, XMVECTOR& point)
+{
+	//To find out if the point is inside the triangle, we will check to see if the point
+	//is on the correct side of each of the triangles edges.
+
+	XMVECTOR cp1 = XMVector3Cross((triV3 - triV2), (point - triV2));
+	XMVECTOR cp2 = XMVector3Cross((triV3 - triV2), (triV1 - triV2));
+	if (XMVectorGetX(XMVector3Dot(cp1, cp2)) >= 0)
+	{
+		cp1 = XMVector3Cross((triV3 - triV1), (point - triV1));
+		cp2 = XMVector3Cross((triV3 - triV1), (triV2 - triV1));
+		if (XMVectorGetX(XMVector3Dot(cp1, cp2)) >= 0)
+		{
+			cp1 = XMVector3Cross((triV2 - triV1), (point - triV1));
+			cp2 = XMVector3Cross((triV2 - triV1), (triV3 - triV1));
+			if (XMVectorGetX(XMVector3Dot(cp1, cp2)) >= 0)
+			{
+				return true;
+			}
+			else
+				return false;
+		}
+		else
+			return false;
+	}
+	return false;
 }
 
 
