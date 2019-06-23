@@ -53,8 +53,15 @@ private:
 		//f = sqrtf(f);
 		return sqrtf((vector.x * vector.x) + (vector.y * vector.y) + (vector.z * vector.z));
 	}
-
+	float magnitude(XMFLOAT3 v) { return  std::sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)); }
 public:
+	//front to back rendering
+	bool RenderBackToFront();
+	float LengthFromCamera(XMFLOAT3 p);
+	XMFLOAT3 DirectionLength(XMFLOAT3 v, XMFLOAT3 v2) { return XMFLOAT3(v.x - v2.x, v.y - v2.y, v.z - v2.z); }
+
+
+
 	vector<Mesh> meshes;
 	//GameObjects();
 	bool InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContext * deviceContext, Shader *shader, Shader *shader2);

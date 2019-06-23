@@ -47,12 +47,13 @@ public:
 	void DestroyGraphicsBuffer();
 	void InitializeScreenQuad();
 	void setViewPort();
+
 	//picking
 	void Picking(float x, float y);
 	bool RaySphereIntersect(XMFLOAT4 rayOrigin, XMFLOAT4 rayDirection, XMFLOAT3 pos, float radius);
 	float RayTriangle(XMVECTOR pickRayInWorldSpacePos,
 		XMVECTOR pickRayInWorldSpaceDir,
-		XMMATRIX& worldSpace);
+		XMMATRIX& worldSpace, int index);
 
 	bool PointInTriangle(XMVECTOR& triV1, XMVECTOR& triV2, XMVECTOR& triV3, XMVECTOR& point);
 	//static Shader* shader;		// outputs texture
@@ -61,6 +62,10 @@ public:
 	static ID3D11Device* device;// = nullptr;
 	static ID3D11DeviceContext* deviceContext;// = nullptr;
 	static Camera* camera;
+
+	static int FrontTobackMeshDraw;
+	static bool FrontToBack;
+
 
 	bool CullBackFace = false;
 	XMFLOAT3 CullCamera;

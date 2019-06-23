@@ -13,6 +13,8 @@ Shader* Graphics::deferredShaders = nullptr;
 ID3D11Device* Graphics::device = nullptr;
 ID3D11DeviceContext* Graphics::deviceContext = nullptr;
 Camera* Graphics::camera = nullptr;
+bool Graphics::FrontToBack = false;
+int Graphics::FrontTobackMeshDraw = 0;
 
 bool Graphics::Initialize(HWND hwnd, int width, int height)
 {
@@ -166,14 +168,13 @@ void Graphics::DrawPass(float dt, float x, float y) {
 	//setViewPort();
 	if (!CullBackFace)
 		CullCamera = camera->GetPositionFloat3();
-	heightDifferance = objects.render(camera->GetViewMatrix(), camera->GetProjectionMatrix(),
-		CullCamera, dt);	// take mouse ray to the objects in order to calculate find local space
+	heightDifferance = objects.render(camera->GetViewMatrix(), camera->GetProjectionMatrix(),CullCamera, dt);
 
 	// Move camera depending on the height of the ground beneath, use float that is returned from objects.render()
 	camera->SetPosition(camera->GetPositionFloat3().x, camera->GetPositionFloat3().y - heightDifferance, camera->GetPositionFloat3().z);
 
 	Picking(x, y);
-
+	
 	//draw objects
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
 }
@@ -322,7 +323,6 @@ void Graphics::setViewPort()
 	vp.MaxDepth = 1.f;
 	deviceContext->RSSetViewports(1, &vp);
 }
-
 XMFLOAT2 MousePosition;
 void Graphics::Picking(float x, float y)
 {
@@ -407,14 +407,16 @@ void Graphics::Picking(float x, float y)
 	XMVECTOR pickRayInWorldSpaceDir = XMVector3TransformNormal(pickRayInViewSpaceDir, pickRayToWorldSpaceMatrix);
 	pickRayInWorldSpaceDir = XMVector3Normalize(pickRayInWorldSpaceDir);
 
-
-	int distanse = RayTriangle(pickRayInWorldSpacePos, pickRayInWorldSpaceDir, objects.meshes[0].getWorld());
-	if (distanse > 0) 
+	for (int i = 0; i < objects.meshes.size(); i++)
 	{
-		objects.meshes[0].Hit(true);
-	}
-	else {
-		objects.meshes[0].Hit(false);
+		int distanse = RayTriangle(pickRayInWorldSpacePos, pickRayInWorldSpaceDir, objects.meshes[i].getWorld(), i);
+		if (distanse > 0)
+		{
+			objects.meshes[i].Hit(true);
+		}
+		else {
+			objects.meshes[i].Hit(false);
+		}
 	}
 }
 
@@ -436,12 +438,12 @@ bool Graphics::RaySphereIntersect(XMFLOAT4 rayOrigin, XMFLOAT4 rayDirection, XMF
 	return true;
 }
 
-float Graphics::RayTriangle(XMVECTOR pickRayInWorldSpacePos, XMVECTOR pickRayInWorldSpaceDir, XMMATRIX& worldSpace)
+float Graphics::RayTriangle(XMVECTOR pickRayInWorldSpacePos, XMVECTOR pickRayInWorldSpaceDir, XMMATRIX& worldSpace, int index)
 {
 	//pick vertices
 	//auto vertices = (Vertex*)objects.meshes[0].vBuffer().GetAddressOf();
-	auto vertices = objects.meshes[0].vertic();
-	UINT triCount = objects.meshes[0].IndexCount;
+	auto vertices = objects.meshes[index].vertic();
+	UINT triCount = objects.meshes[index].IndexCount;
 	float tMin = 0.0f;
 	for (UINT i = 0; i < triCount / 3; i++)
 	{
@@ -589,15 +591,18 @@ void Graphics::updateImguie(float dt)
 		}
 		ImGui::EndMenuBar();
 	}
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::Text("frame (%.1f FPS)", 1000.0f / dt);
-	ImGui::SliderFloat("Dist", (float*)&dist, -10.05f, 10.05f);
-	ImGui::SliderFloat("Up/Down ", (float*)&distZ, -1.05f, 1.05f);
+	//ImGui::SliderFloat("Dist", (float*)&dist, -10.05f, 10.05f);
+	//ImGui::SliderFloat("Up/Down ", (float*)&distZ, -1.05f, 1.05f);
 	ImGui::SliderInt("Load Buffer: ", &deferredBufferDisplay, 0, 4);
 	ImGui::Checkbox("BackFaceCull", &CullBackFace);
-
 	ImGui::Text("MousePosition ( %f , %f )", MousePosition.x, MousePosition.y);
 
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::Checkbox("FrontToBack", &FrontToBack);
+	ImGui::SliderInt("Mesh render: ", &FrontTobackMeshDraw, 0, 2);
+
+
 	ImGui::End();
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -815,7 +820,6 @@ bool Graphics::InitializeScene()
 
 	camera = new Camera();
 	XMFLOAT3 pos(10.f, 60.0f, 50.f);
-//	XMVECTOR position = XMLoadFloat3(&pos);
 	camera->SetPosition(pos);
 	
 	return true;
