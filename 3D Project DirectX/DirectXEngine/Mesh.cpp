@@ -9,7 +9,7 @@ bool Mesh::InitializeObject(ID3D11Device *device, ID3D11DeviceContext *deviceCon
 	this->device = device;
 	this->deviceContext = deviceContext;
 	Initialize(device, deviceContext, file);
-	
+	this->IndexCount = this->vertices.size();
 
 	for (int i = 0; i < textures.size(); i++)
 	{
@@ -55,7 +55,11 @@ void Mesh::draw()
 	}
 
 	deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), vertexBuffer.Stride(), &offset);
-	deviceContext->Draw(indices.size(), 0);
+	deviceContext->Draw(vertices.size(), 0);
+
+
+	//deviceContext->PSSetShaderResources(1, 1,nullptr);
+	//deviceContext->PSSetShaderResources(0, 1, nullptr);
 }
 
 Mesh::~Mesh()

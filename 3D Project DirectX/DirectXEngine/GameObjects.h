@@ -5,25 +5,19 @@
 #include "Mesh/Primitive.h"
 #include "Lights.h"
 #include "Mesh/Terrain.h"
-
+#include "Particle.h"
 #include <SimpleMath.h>
+#include "DirectXHelp.h"
 using namespace DirectX::SimpleMath;
 
 //Separate into per frame and per object
-struct PerFrameMatrices {
-	XMMATRIX world;
-	XMMATRIX view;
-	XMMATRIX projection;
-	XMFLOAT3 camPos;
-	float padding;	//4 nu 16
-};
-
 class GameObjects
 {
 private:
-	vector<Mesh> meshes;
 	vector<Primitive> primitives;
 	Terrain* terrain;
+
+	Particle* particles;
 
 	ID3D11Device* device = nullptr;
 	ID3D11DeviceContext* deviceContext = nullptr;
@@ -59,12 +53,20 @@ private:
 		//f = sqrtf(f);
 		return sqrtf((vector.x * vector.x) + (vector.y * vector.y) + (vector.z * vector.z));
 	}
-
+	float magnitude(XMFLOAT3 v) { return  std::sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)); }
 public:
+	//front to back rendering
+	bool RenderBackToFront();
+	float LengthFromCamera(XMFLOAT3 p);
+	XMFLOAT3 DirectionLength(XMFLOAT3 v, XMFLOAT3 v2) { return XMFLOAT3(v.x - v2.x, v.y - v2.y, v.z - v2.z); }
+
+
+
+	vector<Mesh> meshes;
 	//GameObjects();
 	bool InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContext * deviceContext, Shader *shader, Shader *shader2);
 	bool CreatePrimitive(PRIMITIVIES primitivies);
-	float render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt, std::vector<XMFLOAT4> mousePickInfo);
+	float render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt);
 	~GameObjects();
 };
 #endif // !OBJMODEL_H

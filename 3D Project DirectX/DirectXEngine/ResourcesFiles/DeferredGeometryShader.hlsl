@@ -35,18 +35,39 @@ void main(triangle GS_IN input[3], inout TriangleStream<GSOutput> OutputStream)
 {
 	GSOutput output;
 
-	float3 u = (float3)(input[1].Pos - input[0].Pos);
-	float3 v = (float3)(input[2].Pos - input[0].Pos);
-	float3 normal = normalize(cross(u, v));
+
+
+	//float3 u = (float3)(input[1].Pos - input[0].Pos);
+	//float3 v = (float3)(input[2].Pos - input[0].Pos);
+	//float3 normal = normalize(cross(u, v));
 
 	// normal map
 	float2 deltaUV1 = input[1].tex - input[0].tex;
 	float2 deltaUV2 = input[2].tex - input[0].tex;
 
 	matrix mvp = mul(projection, mul(view, world));
-	float3 temp = camPos;
-	float3 direction = temp - (float3)((input[0].Pos + input[1].Pos + input[2].Pos) / 3);
-	if (dot(normal, direction) >= 0.0f) {
+
+	//float3 center = (input[0].Pos + input[1].Pos + input[2].Pos) / 3;
+	//normal = normalize(mul((float3x3) world, normal));
+	//float3 posnw = mul((float3x3)world, center);
+
+	//float3 direction = camPos - posnw;
+	//if (dot(normal, direction) >= 0.0f)
+	float3 pos0 = mul(world, float4(input[0].Pos.xyz, 1.0f)).xyz;
+	float3 pos1 = mul(world, float4(input[1].Pos.xyz, 1.0f)).xyz;
+	float3 pos2 = mul(world, float4(input[2].Pos.xyz, 1.0f)).xyz;
+
+	float3 u = pos1 - pos0;
+	float3 v = pos2 - pos0; //pos of 3 == 0
+	float3 normal = cross(u, v);
+	normal = normalize(normal);
+
+	//back face culling 
+	//float3 tempPos = mul(float4(pos0, 1.0f), world).xyz;
+
+	float3 direction = camPos.xyz - ((pos0 + pos1 + pos2) / 3); //middle of the triangle
+	if ((dot(direction, normal)) >= 0.f)
+	{
 		for (uint i = 0; i < 3; i++)
 		{
 			output.pos = mul(mvp, input[i].Pos);
@@ -63,6 +84,5 @@ void main(triangle GS_IN input[3], inout TriangleStream<GSOutput> OutputStream)
 			OutputStream.Append(output);
 		}
 	}
-
 	OutputStream.RestartStrip();
 }
