@@ -72,7 +72,6 @@ public:
 	bool InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContext * deviceContext, Shader *shader, Shader *shader2);
 	bool CreatePrimitive(PRIMITIVIES primitivies);
 	float render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt);
-	float render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt, std::vector<XMFLOAT4> mousePickInfo);
 	void renderSkybox(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos);
 	~GameObjects();
 };

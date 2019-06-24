@@ -175,7 +175,7 @@ void Graphics::DrawPass(float dt, float x, float y) {
 	Picking(x, y);
 	
 	deviceContext->OMSetDepthStencilState(depthStencilState, 0);
-	objects.renderSkybox(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.GetPositionFloat3());
+	objects.renderSkybox(camera->GetViewMatrix(), camera->GetProjectionMatrix(), camera->GetPositionFloat3());
 
 	//draw objects
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
@@ -747,14 +747,8 @@ bool Graphics::InitializeShaders()
 		{"TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  }
 	};
 
-	D3D11_INPUT_ELEMENT_DESC layout3[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  }
-	};
-
 	UINT numElements = ARRAYSIZE(layout);
 	UINT numElements2 = ARRAYSIZE(layout2);
-	UINT numElements3 = ARRAYSIZE(layout3);
 	std::wstring shaderfolder = L"..\\x64\\Debug\\";
 
 

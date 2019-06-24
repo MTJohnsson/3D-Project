@@ -43,18 +43,6 @@
     <Filter Include="Resource Files\other">
       <UniqueIdentifier>{afbce25b-d78f-4efa-aa41-5a13bfbc513e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Deferred">
-      <UniqueIdentifier>{f1f6a85d-e331-40ad-bffc-d6edea379bd3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\LastPass">
-      <UniqueIdentifier>{dac9f0f1-257e-438d-a5ea-655eb8dfda6d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Skybox Shaders">
-      <UniqueIdentifier>{395cc575-10bb-4313-ba87-b153ff576993}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\Other Shaders">
-      <UniqueIdentifier>{ff76c57a-f559-4941-956c-bf0ab4616212}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -126,15 +114,6 @@
     <ClCompile Include="Particle.cpp">
       <Filter>Source Files\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="Skybox.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="TGATexture.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
-    <ClCompile Include="SkyDome.cpp">
-      <Filter>Source Files\Other</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">
@@ -185,6 +164,9 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>Header Files\Others</Filter>
+    </ClInclude>
     <ClInclude Include="Lib\Clock.h">
       <Filter>Header Files\Others</Filter>
     </ClInclude>
@@ -215,18 +197,6 @@
     <ClInclude Include="Particle.h">
       <Filter>Header Files\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Skybox.h">
-      <Filter>Header Files\Others</Filter>
-    </ClInclude>
-    <ClInclude Include="TGATexture.h">
-      <Filter>Header Files\Others</Filter>
-    </ClInclude>
-    <ClInclude Include="SkyDome.h">
-      <Filter>Header Files\Others</Filter>
-    </ClInclude>
-    <ClInclude Include="Lib\VertexBuffer.h">
-      <Filter>Header Files\Others</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ResourcesFiles\DeferredGeometryShader.hlsl">
@@ -251,13 +221,7 @@
       <Filter>Resource Files\Deffered</Filter>
     </FxCompile>
     <FxCompile Include="ResourcesFiles\LastPassVertexShader.hlsl">
-      <Filter>Resource Files\LastPass</Filter>
-    </FxCompile>
-    <FxCompile Include="ResourcesFiles\SkyboxPS.hlsl">
-      <Filter>Resource Files\Skybox Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="ResourcesFiles\SkyboxVS.hlsl">
-      <Filter>Resource Files\Skybox Shaders</Filter>
+      <Filter>Resource Files\Deffered</Filter>
     </FxCompile>
     <FxCompile Include="ParticleGS.hlsl">
       <Filter>Resource Files\Particles</Filter>
