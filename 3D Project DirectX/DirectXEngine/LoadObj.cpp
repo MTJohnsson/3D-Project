@@ -15,17 +15,17 @@ Vertex LoadObj::setFaces(std::string  f)
 	ePos = sPos;
 	ePos = f.find_first_of("/");
 	temp = f.substr(sPos, ePos - sPos);
-	index.Position = vertice.at(atof(temp.c_str()) - 1);
+	index.Position = position.at(atof(temp.c_str()) - 1);
 
 	sPos = ePos + 1;
 	ePos = f.find("/", sPos);
 	temp = f.substr(sPos, ePos - sPos);
-	index.TextCoord = TexCoordArray.at(atof(temp.c_str()) - 1);
+	index.TextCoord = TexCoord.at(atof(temp.c_str()) - 1);
 
 	sPos = ePos + 1;
 	ePos = f.length();
 	temp = f.substr(sPos, ePos - sPos);
-	index.Normal = NormalArray.at(atof(temp.c_str()) - 1);
+	index.Normal = Normal.at(atof(temp.c_str()) - 1);
 
 	return index;
 }
@@ -41,12 +41,12 @@ Vertex LoadObj::setFaces2(std::string f)
 	ePos = sPos;
 	ePos = f.find_first_of("/");
 	temp = f.substr(sPos, ePos - sPos);
-	index.Position = vertice.at(atof(temp.c_str()) - 1);
+	index.Position = position.at(atof(temp.c_str()) - 1);
 
 	sPos = ePos + 2;
 	ePos = f.find("/", sPos);
 	temp = f.substr(sPos, ePos - sPos);
-	index.Normal = NormalArray.at(atof(temp.c_str()) - 1);
+	index.Normal = Normal.at(atof(temp.c_str()) - 1);
 	//index.TextCoord = TexCoordArray.at(atof(temp.c_str()) - 1);
 
 	/*sPos = ePos + 1;
@@ -100,6 +100,15 @@ XMFLOAT3 LoadObj::ConvertString(string &f1, string &f2, string& f3)
 	vertex.y = atof(f2.c_str());
 	vertex.z = atof(f3.c_str());
 
+	if (sphere.Max.x < vertex.x)
+		sphere.Max.x = vertex.x;
+	if(sphere.Max.y < vertex.y)
+		sphere.Max.y = vertex.y;
+
+	if (sphere.Min.x > vertex.x)
+		sphere.Min.x = vertex.x;
+	if (sphere.Min.y > vertex.y)
+		sphere.Min.y = vertex.y;
 	return vertex;
 }
 XMFLOAT2 LoadObj::ConvertString(string & f1, string & f2)
@@ -137,17 +146,17 @@ bool LoadObj::loadOBJ(std::string& file)
 		else if (buffer.substr(0, 2) == "v ") {
 			line >> temp >> f1 >> f2 >> f3;
 			XMFLOAT3 vertex = ConvertString(f1, f2, f3);
-			vertice.push_back(vertex);
+			position.push_back(vertex);
 		}
 		else if (buffer.substr(0, 2) == "vn") {
 			line >> temp >> f1 >> f2 >> f3;
 			XMFLOAT3 normal = ConvertString(f1, f2, f3);
-			NormalArray.push_back(normal);
+			Normal.push_back(normal);
 		}
 		else if (buffer.substr(0, 2) == "vt") {
 			line >> temp >> f1 >> f2 >> f3;
 			XMFLOAT2 texture = ConvertString(f1, f2);
-			TexCoordArray.push_back(texture);
+			TexCoord.push_back(texture);
 		}
 		else if (buffer.substr(0, 1) == "f") {
 			int counter = 0;
@@ -160,7 +169,7 @@ bool LoadObj::loadOBJ(std::string& file)
 			//check number of faces
 			//if 8 means 4 faces else 3 faces
 			bool found = false;
-			if (this->TexCoordArray.size() == 0) {
+			if (this->TexCoord.size() == 0) {
 				found = true;
 			}
 			if (counter == 8) {
@@ -178,7 +187,7 @@ bool LoadObj::loadOBJ(std::string& file)
 						ex1 = setFaces2(f1);
 					else
 						ex1 = setFaces(f1);
-					indices.push_back(ex1);
+					vertices.push_back(ex1);
 				}
 				else if (1 == i) {
 					if (found)
@@ -186,23 +195,23 @@ bool LoadObj::loadOBJ(std::string& file)
 					else
 						ex2 = setFaces(f2);
 
-					indices.push_back(ex2);
+					vertices.push_back(ex2);
 				}if (2 == i) {
 					if (found)
 						ex3 = setFaces2(f3);
 					else
 						ex3 = setFaces(f3);
 
-					indices.push_back(ex3);
+					vertices.push_back(ex3);
 				}if (3 == i) {//4th face, make 2 more verticies
 					if (found)
 						index = setFaces2(f4);
 					else
 						index = setFaces(f4);
 
-					indices.push_back(index);
-					indices.push_back(ex1);
-					indices.push_back(ex3);
+					vertices.push_back(index);
+					vertices.push_back(ex1);
+					vertices.push_back(ex3);
 				}
 
 			}
@@ -216,8 +225,13 @@ bool LoadObj::Initialize(ID3D11Device *device, ID3D11DeviceContext *deviceContex
 {
 	this->device = device;
 	loadOBJ(file);
-	vertexBuffer.Initialize(device, indices.data(), indices.size());
-
+	HRESULT hr = vertexBuffer.Initialize(device, vertices.data(), vertices.size());
+	if (FAILED(hr))
+	{
+		MessageBox(NULL, "vertexBuffer  loadOBJ Failed.",
+			"Create buffer Error", MB_OK);
+		return false;
+	}
 	//add texture if there are non
 	if (textures.size() == NULL) {
 		Texture tex;
@@ -225,9 +239,16 @@ bool LoadObj::Initialize(ID3D11Device *device, ID3D11DeviceContext *deviceContex
 		tex.LoadDefaultTexture(device, DEFAULT);
 		textures.push_back(tex);
 	}
+	sphere.calculateRadius();
 	return true;
 }
 
 LoadObj::~LoadObj()
 {
+}
+
+void Sphere::calculateRadius()
+{
+	this->radius = abs(Max.x - Min.x);
+	this->radius  = radius/ 2;
 }

@@ -114,16 +114,19 @@ void RenderWindow::RegisterWindowClass()
 	if (!RegisterClassEx(&wcex)) {
 		//
 	}
-	RECT rc = { 0, 0, (int)width, (int)height };
+	RECT rc;
+	rc.left = 50;
+	rc.top = 50;
+	rc.right = rc.left + width;
+	rc.bottom = rc.top + height;
 
-	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-
+	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, FALSE);
 	this->handle = CreateWindow(
 		"BTH_D3D_DEMO",
 		"BTH Direct3D Demo",
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
+		WS_OVERLAPPEDWINDOW | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+		rc.left,
+		rc.top,
 		rc.right - rc.left,
 		rc.bottom - rc.top,
 		nullptr,

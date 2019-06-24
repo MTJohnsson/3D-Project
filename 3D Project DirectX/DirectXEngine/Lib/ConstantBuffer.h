@@ -26,6 +26,12 @@ public:
 		lbDesc.StructureByteStride = 0;
 
 		HRESULT hr = device->CreateBuffer(&lbDesc, nullptr, this->constantBuffer.GetAddressOf());
+		if (FAILED(hr))
+		{
+			MessageBox(NULL, "CreateBuffer Failed.",
+				"Create buffer Error", MB_OK);
+			return false;
+		}
 		return true;
 	}
 	bool Initialize(ID3D11Device * device)

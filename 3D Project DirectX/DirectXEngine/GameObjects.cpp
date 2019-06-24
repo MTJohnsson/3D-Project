@@ -1,19 +1,61 @@
 #include "GameObjects.h"
+#include "Graphics.h"
 
+bool GameObjects::RenderBackToFront()
+{
+	int minIndex;
+	for (int i = 0; i < meshes.size() - 1; i++)
+	{
+
+		minIndex = i;
+		for (int j = i + 1; j < meshes.size(); j++)
+		{
+			if (LengthFromCamera(meshes[j].getPosition()) <
+				LengthFromCamera(meshes[minIndex].getPosition()))
+			{
+				minIndex = j;
+			}
+			
+		}
+		Mesh Temp = meshes[minIndex];
+		meshes[minIndex] = meshes[i];
+		meshes[i] = Temp;
+
+	}
+	return true;
+}
+
+float GameObjects::LengthFromCamera(XMFLOAT3 p)
+{
+	XMFLOAT3 direction = DirectionLength(Graphics::camera->GetPositionFloat3(), p);
+	return magnitude(direction);
+}
 
 bool GameObjects::InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContext * deviceContext, Shader *shader, Shader *shader2)
 {
-	//this->data = data;
 	this->device = device;
 	this->deviceContext = deviceContext;
 
 	Mesh sphere;
 	sphere.InitializeObject(device, deviceContext, "ObjFiles/earth.obj", shader, shader2);
 	sphere.setScale(1, 1, 1);
+	sphere.setPosition(10.f, 46.1f, 62.f);
 	meshes.push_back(sphere);
-	meshes[0].setPosition(10.f, 46.1f, 62.f);
 
-	terrain = new Terrain(device, deviceContext, shader, shader2);
+
+	Mesh sphere2;
+	sphere2.InitializeObject(device, deviceContext, "ObjFiles/earth.obj", shader, shader2);
+	sphere2.setScale(1, 1, 1);
+	sphere2.setPosition(10.f, 46.1f, 68.f);
+	meshes.push_back(sphere2);
+
+	Mesh sphere3;
+	sphere3.InitializeObject(device, deviceContext, "ObjFiles/earth.obj", shader, shader2);
+	sphere3.setScale(1, 1, 1);
+	sphere3.setPosition(15.f, 46.1f, 72.f);
+	meshes.push_back(sphere3);
+
+	terrain = new Terrain(device, deviceContext);
 
 	//CreatePrimitive(CUBE);
 
@@ -25,6 +67,10 @@ bool GameObjects::InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContex
 	if (!skybox.setTexture(this->device, this->deviceContext, "blue")) {
 		return false;
 	}
+
+	particles = new Particle();
+	
+
 	return true;
 }
 
@@ -39,68 +85,57 @@ bool GameObjects::CreatePrimitive(PRIMITIVIES primitivies)
 	return true;
 }	
 float speed = 0.001f;
-float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt, std::vector<XMFLOAT4> mousePickInfo)
+float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt)
 {
 	// This function calculates how much the camera should move in y-axis depending on terrain height beneath it
 	float heightDifferance = terrain->getHeight(camPos);
 	// return this float to Graphics
 
 	gIncrement += dt*speed;
-	constantBuffer.data.camPos = XMFLOAT3(camPos);
+
+	constantBuffer.data.camPos = camPos;
 	constantBuffer.data.view = view;
 	constantBuffer.data.projection = projection;
-	
-	//LightBuffer->updateConstantBuffer(deviceContext);
-	//deviceContext->UpdateSubresource( *LightBuffer->getConstantBuffer(), 0, nullptr, LightBuffer, 0, 0);
-	//deviceContext->PSSetConstantBuffers(0, 1, LightBuffer->getConstantBuffer());
-	
-	for (int i = 0; i < meshes.size(); i++)
+
+	//render back to front
+	if (Graphics::FrontToBack) 
 	{
-		// collision control - if hit -> rotate
-		if (mousePickInfo.size() == 2)
+		RenderBackToFront();
+		int index = Graphics::FrontTobackMeshDraw;
+		
+		if (meshes[index].IsHit() == true)
 		{
-			bool hit = true;
-			// LOCAL SPACE	(previous calculations in Engine.cpp, from line 40)
-			XMMATRIX invertedWorld = XMMatrixInverse(NULL, meshes[i].getWorld()); // W^-1
-
-			Vector4 rayOriginL = XMVector4Transform(Vector4(mousePickInfo[0].x, mousePickInfo[0].y, mousePickInfo[0].z, mousePickInfo[0].w), invertedWorld);
-			Vector4 rayDirL = XMVector4Transform(Vector4(mousePickInfo[1].x, mousePickInfo[1].y, mousePickInfo[1].z, mousePickInfo[1].w), invertedWorld);
-
-			// Shere intersection (from 3D lab 1)
-			XMFLOAT3 l = XMFLOAT3(0.f, 1.32f, 1.f) - XMFLOAT3(rayOriginL.x, rayOriginL.y, rayOriginL.z);
-			float s = dot(l, XMFLOAT3(rayDirL.x, rayDirL.y, rayDirL.z));
-			float m = sqrtf(abs(length(l) * length(l) - s * s));
-			
-			if (s < 0 && length(l) < 1.f)
-				hit = false;
-			if (m > 1.f)
-				hit = false;
-
-			// Stop rotating when clicked on again
-			//if (meshes[i].IsHit() == true)
-			//	hit = false;
-			
-			meshes[i].Hit(hit);
+			meshes[index].setRotation(0.0f, 1.0, 0.0f, gIncrement * 0.2);
 		}
-		if (meshes[i].IsHit() == true)
-		{
-			meshes[i].setRotation(0.0f, 1.0, 0.0f, gIncrement * 0.2);
-		}
-		constantBuffer.data.world = meshes[i].getWorld();
-		constantBuffer.data.camPos = camPos;
+		constantBuffer.data.world = meshes[index].getWorld();
 		constantBuffer.updateConstantBuffer(deviceContext);
 		deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
-		meshes[i].draw();
+		meshes[index].draw();
+		
+	}
+	else
+	{
+		for (int i = 0; i < meshes.size(); i++)
+		{
+
+			if (meshes[i].IsHit() == true)
+			{
+				meshes[i].setRotation(0.0f, 1.0, 0.0f, gIncrement * 0.2);
+			}
+			constantBuffer.data.world = meshes[i].getWorld();
+			constantBuffer.updateConstantBuffer(deviceContext);
+			deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
+			meshes[i].draw();
+		}
 	}
 
-	// Terrain
-	constantBuffer.data.camPos = camPos;
+
 	constantBuffer.data.world = terrain->getWorld();
-	constantBuffer.data.view = view;
-	constantBuffer.data.projection = projection;
 	constantBuffer.updateConstantBuffer(deviceContext);
 	this->deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
 	this->terrain->draw();
+
+	particles->draw(constantBuffer);
 
 	return heightDifferance;
 }
@@ -123,4 +158,5 @@ GameObjects::~GameObjects()
 	delete this->terrain;
 	primitives.clear();
 	this->constantBuffer.release();
+	delete this->particles;
 }

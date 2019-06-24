@@ -14,7 +14,7 @@ protected:
 	float Angle = 0.0f;
 
 public:
-	const XMFLOAT3 &getPosition()const;
+	const XMFLOAT3 &getPosition();
 	const XMFLOAT3 &getScale()const;
 	const XMFLOAT3 &getRotation()const;
 

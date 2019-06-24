@@ -2,7 +2,7 @@
 
 
 
-const XMFLOAT3 & Transform::getPosition() const{
+const XMFLOAT3 & Transform::getPosition(){
 	return this->Position;
 }
 

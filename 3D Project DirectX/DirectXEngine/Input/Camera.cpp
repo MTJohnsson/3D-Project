@@ -1,4 +1,4 @@
-#include "Camera.h"
+#include "camera.h"
 //
 //
 //
@@ -127,12 +127,12 @@ Camera::Camera()
 	this->rot = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	this->rotVector = XMLoadFloat3(&this->rot);
 	this->UpdateViewMatrix();
-	SetProjectionValues(45.0f, float(HEIGHT / float(WIDTH)), 0.1f, 200.0f);
+	SetProjectionValues(90.0f, float(HEIGHT / float(WIDTH)), 0.1f, 100.0f);
 }
 
 void Camera::SetProjectionValues(float fovDegrees, float aspectRatio, float nearZ, float farZ)
 {
-	float fovRadians = (fovDegrees / 180.0f) * XM_2PI;
+	float fovRadians = (fovDegrees / 180.0f) * XM_PI;
 	this->projectionMatrix = XMMatrixPerspectiveFovLH(fovRadians, aspectRatio, nearZ, farZ);
 	ratio = aspectRatio;
 }
