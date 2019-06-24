@@ -12,7 +12,6 @@
 #include "GameObjects.h"
 
 #include "Mouse.h"
-#include "SkyDome.h"
 
 //Colours
 static const float cyan[4] = { 0.0f, 1.0f, 1.0f, 1.0f };
@@ -70,7 +69,6 @@ private:
 	int deferredBufferDisplay;
 	ConstantBuffer<BufferDisplay> bufferDisplayBuffer;
 
-	SkyDome Sky;
 private:
 	bool InitializeDirectX(HWND hwmd, int width, int height);
 	bool InitializeShaders();
@@ -88,7 +86,7 @@ private:
 	ID3D11Texture2D* depthStencilBuffer;
 	ID3D11DepthStencilView* depthStencilView;
 	//om både befinner sig på samma zeta ifrån kammran vill man se den röda trianglen istället för gröna i exemplet
-	//ID3D11DepthStencilState* depthStencilState;
+	ID3D11DepthStencilState* depthStencilState;
 
 	//sampler state for texturing
 	ID3D11SamplerState*samplerState;
@@ -97,6 +95,5 @@ private:
 	Shader lastPassShaders;
 	Shader deferredShaders;
 	Shader deferredShadersNormalMapping;
-	Shader skyboxShader;
 };
 #endif // !OBJMODEL_H

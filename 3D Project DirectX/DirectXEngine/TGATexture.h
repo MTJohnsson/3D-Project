@@ -1,10 +1,10 @@
-#ifndef TEXTURELOAD_H
-#define TEXTURELOAD_H
+#ifndef TGATEXTURE_H
+#define TGATEXTURE_H
 #include <d3d11.h>
 #include <stdio.h>
 #include <fstream>
 
-class TextureLoad
+class TGATexture
 {
 private:
 	struct TargaHeader
@@ -28,9 +28,9 @@ private:
 
 	bool transparent;
 public:
-	TextureLoad();
-	TextureLoad(const TextureLoad&);
-	~TextureLoad();
+	TGATexture();
+	TGATexture(const TGATexture&);
+	~TGATexture();
 
 	bool Initialize(ID3D11Device* device, ID3D11DeviceContext* context, const char*, int mipLevels = -1);
 	void Shutdown();
@@ -39,9 +39,9 @@ public:
 
 	bool isTransparent();
 
-	unsigned char* getTextureCharArray();
 	unsigned short getWidth();
 	unsigned short getHeight();
+	unsigned char* getTextureArrayOfChar();
 };
 
 #endif

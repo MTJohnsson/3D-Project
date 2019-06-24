@@ -7,8 +7,12 @@ SkyDome::SkyDome()
 
 SkyDome::~SkyDome()
 {
-	this->sphereVerticies->Release();
-	this->sphereIndicies->Release();
+	if (this->sphereVerticies != nullptr) {
+		this->sphereVerticies->Release();
+	}
+	if (this->sphereIndicies != nullptr) {
+		this->sphereIndicies->Release();
+	}
 	if (sdrv != nullptr) {
 		this->sdrv->Release();
 	}
@@ -140,29 +144,53 @@ void SkyDome::InitializeSphere(ID3D11Device* device, int LatLines, int LongLines
 
 }
 
-bool SkyDome::loadCubeMap(ID3D11Device* device, std::wstring fileName) {
+bool SkyDome::loadCubeMap(ID3D11Device* device, ID3D11DeviceContext* context) {
 	HRESULT hr;
+	std::string file = "5dim";
+	std::string fileName = "ObjFiles/" + file + "_bk.tga";
+	textures[0].Initialize(device, context, fileName.c_str());
+	fileName = "ObjFiles/" + file + "_dn.tga";
+	textures[1].Initialize(device, context, fileName.c_str());
+	fileName = "ObjFiles/" + file + "_ft.tga";
+	textures[2].Initialize(device, context, fileName.c_str());
+	fileName = "ObjFiles/" + file + "_lf.tga";
+	textures[3].Initialize(device, context, fileName.c_str());
+	fileName = "ObjFiles/" + file + "_rt.tga";
+	textures[4].Initialize(device, context, fileName.c_str());
+	fileName = "ObjFiles/" + file + "_up.tga";
+	textures[5].Initialize(device, context, fileName.c_str());
 	
-	std::wstring wide_string(fileName.begin(), fileName.end());
-	ID3D11Texture2D* SMTexture = 0;
-	hr = DirectX::CreateWICTextureFromFile(device, fileName.c_str(), (ID3D11Resource**)&SMTexture, NULL);
-	//(d3d11Device, L"skymap.dds",&loadSMInfo, 0, (ID3D11Resource**)&SMTexture, 0);
+	D3D11_TEXTURE2D_DESC cubeDesc;
+	cubeDesc.Width = textures[0].getWidth();
+	cubeDesc.Height = textures[0].getHeight();
+	cubeDesc.MipLevels = 1;
+	cubeDesc.ArraySize = 6;
+	cubeDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	cubeDesc.CPUAccessFlags = 0;
+	cubeDesc.SampleDesc.Count = 1;
+	cubeDesc.SampleDesc.Quality = 0;
+	cubeDesc.Usage = D3D11_USAGE_DEFAULT;
+	cubeDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 
+	D3D11_SHADER_RESOURCE_VIEW_DESC cubeSRV;
+	cubeSRV.Format = cubeDesc.Format;
+	cubeSRV.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+	cubeSRV.TextureCube.MipLevels = cubeDesc.MipLevels;
+	cubeSRV.TextureCube.MostDetailedMip = 0;
+
+	D3D11_SUBRESOURCE_DATA cubeData[6];
+	for (int i = 0; i < 6; i++) {
+		cubeData[i].pSysMem = this->textures[i].getTextureArrayOfChar();
+		cubeData[i].SysMemPitch = this->textures[i].getWidth() * 4;
+		cubeData[i].SysMemSlicePitch = 0;
+	}
+
+	hr = device->CreateTexture2D(&cubeDesc, cubeData, &domeTexture);
 	if (FAILED(hr)) {
 		return false;
 	}
 
-	D3D11_TEXTURE2D_DESC SMTextureDesc;
-	SMTextureDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
-	SMTexture->GetDesc(&SMTextureDesc);
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC SMViewDesc;
-	SMViewDesc.Format = SMTextureDesc.Format;
-	SMViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-	SMViewDesc.TextureCube.MipLevels = SMTextureDesc.MipLevels;
-	SMViewDesc.TextureCube.MostDetailedMip = 0;
-
-	hr = device->CreateShaderResourceView(SMTexture, &SMViewDesc, &sdrv);
+	hr = device->CreateShaderResourceView(domeTexture, &cubeSRV, &sdrv);
 	if (FAILED(hr)) {
 		return false;
 	}
@@ -195,16 +223,17 @@ void SkyDome::setupRenderStates(ID3D11Device* device) {
 void SkyDome::drawSkydome(ID3D11DeviceContext* context) {
 	UINT stride = sizeof(skyDomeVertex);
 	UINT offset = 0;
+	context->IASetInputLayout(skyDomeShader.GetVertexShader()->GetInputLayout());
 	context->IASetVertexBuffers(0, 1, &sphereVerticies, &stride, &offset);
 	context->IASetIndexBuffer(sphereIndicies, DXGI_FORMAT_R32_UINT, 0);
-	context->IASetInputLayout(skyDomeShader.GetVertexShader()->GetInputLayout());
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
 	context->VSSetShader(skyDomeShader.GetVertexShader()->GetShader(), nullptr, 0);
 	context->GSSetShader(nullptr, nullptr, 0);
 	context->PSSetShader(skyDomeShader.GetPixelShader()->GetShader(), nullptr, 0);
-	context->PSSetShaderResources(0, 1, &sdrv);
+	context->PSSetShaderResources(0, 1, &sdrv);/*
 	context->OMSetDepthStencilState(DSLessEqual, 0);
-	context->RSSetState(RSCullNone);
+	context->RSSetState(RSCullNone);*/
 	context->DrawIndexed(NrSphereFaces * 3, 0, 0);
 
 	context->OMSetDepthStencilState(nullptr, 0);

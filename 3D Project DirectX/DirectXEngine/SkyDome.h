@@ -2,7 +2,7 @@
 #define SKYDOME_H
 #include"DirectXHelp.h"
 #include"Lib/Shaders.h"
-#include<WICTextureLoader.h>
+#include"TGATexture.h"
 #include<vector>
 #include<string>
 struct skyDomeVertex {
@@ -15,7 +15,7 @@ public:
 	~SkyDome();
 
 	void InitializeSphere(ID3D11Device* device ,int latitude, int longitude);
-	bool loadCubeMap(ID3D11Device* device, std::wstring fileName);
+	bool loadCubeMap(ID3D11Device* device, ID3D11DeviceContext* context);
 	void updateWorld(XMFLOAT3 camPos);
 	void setupRenderStates(ID3D11Device* device);
 	void drawSkydome(ID3D11DeviceContext* context);
@@ -26,7 +26,9 @@ private:
 	ID3D11Buffer* sphereIndicies;
 
 	ID3D11ShaderResourceView* sdrv;
-	ID3D11Resource* srcTex[6];
+	ID3D11Texture2D* domeTexture;
+
+	TGATexture textures[6];
 
 	ID3D11DepthStencilState* DSLessEqual;
 	ID3D11RasterizerState* RSCullNone;

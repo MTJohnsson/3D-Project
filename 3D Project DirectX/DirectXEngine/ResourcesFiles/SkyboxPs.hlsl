@@ -18,7 +18,14 @@ struct DeferredPixelOut
 DeferredPixelOut main(VS_OUT input)
 {
 	DeferredPixelOut DefPOut;
+
 	DefPOut.textBuffer = texCube.Sample(sampAni, input.tex);
+	/*float height = input.tex.y;
+	if (height < 0.0f) {
+		height = 0;
+	}
+	DefPOut.textBuffer = lerp(float4(0.0f, 2.0f, 2.0f, 1.0f), float4(0.0f, 10.0f, 10.0f, 1.0f), height);
+	*/
 	DefPOut.normalBuffer = float4(0.0f, 0.0f, 0.0f, 1.0f);
 	DefPOut.positionBuffer = float4(input.pos);
 

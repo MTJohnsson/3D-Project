@@ -1,22 +1,22 @@
 struct VS_IN
 {
-    float4 Pos : SV_POSITION;
+	float4 Pos : POSITION;
 };
 
 struct VS_OUT
 {
-    float4 pos : SV_POSITION;
-    float3 tex : TEXCOORD;
+	float4 pos : SV_POSITION;
+	float3 tex : TEXCOORD;
 };
 
 cbuffer CB_PER_FRAME : register(b0)
 {
 	// MVP
-    float4x4 world; //16byte
-    float4x4 view; //16
-    float4x4 projection;
-    float3 camPos; //12
-    float padding; //4 now 16
+	float4x4 world; //16byte
+	float4x4 view; //16
+	float4x4 projection;
+	float3 camPos; //12
+	float padding; //4 now 16
 }
 
 VS_OUT main(VS_IN input) {

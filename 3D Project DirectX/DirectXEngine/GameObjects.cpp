@@ -19,7 +19,10 @@ bool GameObjects::InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContex
 
 	if (!constantBuffer.Initialize(device))
 		return false;
-	if (!skybox.InitializeSkybox(this->device)) {
+	if (!skybox.initialize(this->device)) {
+		return false;
+	}
+	if (!skybox.setTexture(this->device, this->deviceContext, "blue")) {
 		return false;
 	}
 	return true;
@@ -101,15 +104,16 @@ float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, f
 
 	return heightDifferance;
 }
-void GameObjects::renderSkybox(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, ID3D11DeviceContext* context) {
-	constantBuffer.data.camPos = XMFLOAT3(camPos);
-	constantBuffer.data.view = view;
-	constantBuffer.data.projection = projection;
-	constantBuffer.data.world = XMMatrixIdentity();
-	constantBuffer.updateConstantBuffer(context);
+void GameObjects::renderSkybox(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos) {
+	XMMATRIX skyWorld = XMMatrixIdentity();
+	XMMATRIX scale = XMMatrixScaling(5.0f, 5.0f, 5.0f);
+	XMMATRIX translation = XMMatrixTranslation(camPos.x, camPos.y, camPos.z);
+	skyWorld = scale * translation;
+	this->skybox.setWorld(skyWorld, this->deviceContext);
+	this->skybox.setViewProj(view, projection, this->deviceContext);
+	this->skybox.setCB(this->deviceContext);
 
-	context->VSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
-	this->skybox.renderSkybox(context);
+	this->skybox.render(this->deviceContext);
 }
 GameObjects::~GameObjects()
 {

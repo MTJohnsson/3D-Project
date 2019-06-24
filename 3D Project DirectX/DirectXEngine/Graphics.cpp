@@ -23,11 +23,6 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 	//objects.InitializeGameObjects(device, deviceContext, shader, shader2);
 	//objects.InitializeGameObjects(device, deviceContext, &deferredShaders, &deferredShadersNormalMapping);
 	objects.InitializeGameObjects(device, deviceContext, &deferredShadersNormalMapping, &deferredShaders);
-	
-	Sky.InitializeSphere(device, 10, 10);
-	Sky.setupRenderStates(device);
-	std::wstring skyFilename(L"textureTerrain.jpg");
-	Sky.loadCubeMap(device, skyFilename);
 
 
 	IMGUI_CHECKVERSION();
@@ -150,21 +145,6 @@ void Graphics::LastRender() {
 }
 void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
 	
-	Sky.updateWorld(camera.GetPositionFloat3());
-	MatrixBuffer.data.camPos = camera.GetPositionFloat3();
-	MatrixBuffer.data.projection = camera.GetProjectionMatrix();
-	MatrixBuffer.data.view = camera.GetViewMatrix();
-	MatrixBuffer.data.world = Sky.getWorld();
-	MatrixBuffer.updateConstantBuffer(deviceContext);
-	deviceContext->VSSetConstantBuffers(0, 1, MatrixBuffer.getConstantBuffer());
-	Sky.drawSkydome(deviceContext);
-
-	deviceContext->IASetInputLayout(deferredShaders.GetVertexShader()->GetInputLayout());
-	deviceContext->VSSetShader(deferredShaders.GetVertexShader()->GetShader(), NULL, 0);
-	deviceContext->GSSetShader(deferredShaders.GetGeometryShader()->GetShader(), nullptr, 0);
-	deviceContext->PSSetShader(deferredShaders.GetPixelShader()->GetShader(), NULL, 0);
-	deviceContext->RSSetState(rasterizerState);
-
 	//set depthStencil state
 	//deviceContext->OMSetDepthStencilState(nullptr, 0);
 	//deviceContext->PSSetSamplers(0, 1, &samplerState);
@@ -178,6 +158,9 @@ void Graphics::DrawPass(float dt, std::vector<XMFLOAT4> mousePickInfo) {
 
 	// Move camera depending on the height of the ground beneath, use float that is returned from objects.render()
 	camera.SetPosition(camera.GetPositionFloat3().x, camera.GetPositionFloat3().y - heightDifferance, camera.GetPositionFloat3().z);
+
+	deviceContext->OMSetDepthStencilState(depthStencilState, 0);
+	objects.renderSkybox(camera.GetViewMatrix(), camera.GetProjectionMatrix(), camera.GetPositionFloat3());
 
 	//draw objects
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
@@ -329,7 +312,7 @@ Graphics::~Graphics()
 	this->rasterizerState->Release();
 	this->depthStencilBuffer->Release();
 	this->depthStencilView->Release();
-	//this->depthStencilState->Release();
+	this->depthStencilState->Release();
 
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -436,6 +419,7 @@ bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
 		MessageBox(NULL, "CreateTexture2D Failed.", "Failed to create depthStencilDesc", MB_OK);
 		return false;
 	}
+
 	hr = device->CreateDepthStencilView(depthStencilBuffer, NULL, &depthStencilView);
 	if (FAILED(hr))
 	{
@@ -473,6 +457,21 @@ bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
 			"D3D11 Initialisation Error", MB_OK);
 		return false;
 	}
+
+	D3D11_DEPTH_STENCIL_DESC dssDesc;
+	ZeroMemory(&dssDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+	dssDesc.DepthEnable = true;
+	dssDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dssDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+	hr = device->CreateDepthStencilState(&dssDesc, &depthStencilState);
+	if(FAILED(hr))
+	{
+		MessageBox(NULL, "Failed to create depth stencil state.",
+			"D3D11 Initialisation Error", MB_OK);
+		return false;
+	}
+
 	return true;
 }
 
@@ -528,12 +527,7 @@ bool Graphics::InitializeShaders()
 	deferredShadersNormalMapping.CreatPixelShader(device, shaderfolder + L"DeferredPixelShaderNormalMapping.cso");
 	deferredShadersNormalMapping.CreatGeometryShader(device, shaderfolder + L"DeferredGeometryShader.cso");
 
-	skyboxShader.CreatVertexShader(device, shaderfolder + L"SkyboxVS.cso", layout2, numElements2);
-	skyboxShader.CreatPixelShader(device, shaderfolder + L"SkyboxPS.cso");
-
-	Sky.skyDomeShader.CreatVertexShader(device, shaderfolder + L"SkydomeVS.cso", layout3, numElements3);
-	Sky.skyDomeShader.CreatPixelShader(device, shaderfolder + L"SkydomePS.cso");
-
+	
 	//Create sampler description for sampler state
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));

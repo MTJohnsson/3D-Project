@@ -1,9 +1,9 @@
 #include"TGATexture.h"
 
-TextureLoad::TextureLoad()
+TGATexture::TGATexture()
 {
-	m_targaData = 0;
-	m_texture = 0;
+	m_targaData = nullptr;
+	m_texture = nullptr;
 	m_textureView = nullptr;
 
 	width = 0;
@@ -11,23 +11,26 @@ TextureLoad::TextureLoad()
 }
 
 
-TextureLoad::TextureLoad(const TextureLoad& other)
+TGATexture::TGATexture(const TGATexture& other)
 {
 }
 
 
-TextureLoad::~TextureLoad()
+TGATexture::~TGATexture()
 {
+	Shutdown();
 }
 
-bool TextureLoad::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, const char* filename, int mipLevels)
+bool TGATexture::Initialize(ID3D11Device* device, ID3D11DeviceContext* context, const char* filename, int mipLevels)
 {
 	bool result;
-	int height, width;
+	int height;
+	int width;
 	D3D11_TEXTURE2D_DESC textureDesc;
 	HRESULT hResult;
 	unsigned int rowPitch;
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+
 	// Load the targa image data into memory.
 	result = LoadTarga(filename, height, width);
 	if (!result)
@@ -84,7 +87,7 @@ bool TextureLoad::Initialize(ID3D11Device* device, ID3D11DeviceContext* context,
 	return true;
 }
 
-void TextureLoad::Shutdown()
+void TGATexture::Shutdown()
 {
 	// Release the texture view resource.
 	if (m_textureView)
@@ -110,42 +113,38 @@ void TextureLoad::Shutdown()
 	return;
 }
 
-ID3D11ShaderResourceView*& TextureLoad::GetTexture()
+ID3D11ShaderResourceView*& TGATexture::GetTexture()
 {
 	return m_textureView;
 }
 
-bool TextureLoad::isTransparent()
+bool TGATexture::isTransparent()
 {
 	return this->transparent;
 }
 
-unsigned char * TextureLoad::getTextureCharArray()
-{
-	return m_targaData;
-}
-
-unsigned short TextureLoad::getWidth()
+unsigned short TGATexture::getWidth()
 {
 	return this->width;
 }
 
-unsigned short TextureLoad::getHeight()
+unsigned short TGATexture::getHeight()
 {
 	return this->height;
 }
 
-bool TextureLoad::LoadTarga(const char* filename, int& height, int& width)
+unsigned char * TGATexture::getTextureArrayOfChar()
+{
+	return m_targaData;
+}
+
+bool TGATexture::LoadTarga(const char* filename, int& height, int& width)
 {
 	int error, bpp, imageSize, index, i, j, k;
 	FILE* filePtr;
 	unsigned int count;
 	TargaHeader targaFileHeader;
 	unsigned char* targaImage;
-
-	//SAVE WIDTH HEIGHT
-	//this->width = width;
-	//this->height = height;
 
 	// Open the targa file for reading in binary.
 	error = fopen_s(&filePtr, filename, "rb");
@@ -225,7 +224,6 @@ bool TextureLoad::LoadTarga(const char* filename, int& height, int& width)
 			{
 				transparent = true;
 			}
-
 			// Increment the indexes into the targa data.
 			k += 4;
 			index += 4;
