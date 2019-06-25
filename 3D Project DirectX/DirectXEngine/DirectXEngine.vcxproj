@@ -41,7 +41,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -144,6 +144,8 @@
     </ClCompile>
     <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
+    <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="TGATexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXHelp.h" />
@@ -165,6 +167,7 @@
     <ClInclude Include="Lib\Shaders.h" />
     <ClInclude Include="Lib\Texture.h" />
     <ClInclude Include="Lib\Transform.h" />
+    <ClInclude Include="Lib\VertexBuffer.h" />
     <ClInclude Include="Lights.h" />
     <ClInclude Include="Mesh\Primitive.h" />
     <ClInclude Include="Mesh.h">
@@ -176,7 +179,8 @@
     </ClInclude>
     <ClInclude Include="QuadTree.h" />
     <ClInclude Include="RenderWindow.h" />
-    <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="TGATexture.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ParticleGS.hlsl">
@@ -241,6 +245,11 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="ResourcesFiles\SkyboxPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\SkyboxVS.hlsl" />
     <FxCompile Include="VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>

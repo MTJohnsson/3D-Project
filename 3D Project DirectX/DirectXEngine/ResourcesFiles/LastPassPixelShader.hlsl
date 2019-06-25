@@ -1,7 +1,6 @@
 Texture2D	textureTexture: register(t2);
 Texture2D	textureNormal: register(t3);
 Texture2D	texturePos: register(t4);
-Texture2D	textureNormalMap: register(t5);
 
 SamplerState textureSampler;
 
@@ -76,7 +75,6 @@ PixelOut main(GS_OUT input)
 	float3 normal = textureNormal.Sample(textureSampler, input.TextureCoord).rgb;
 	float3 diffuse = textureTexture.Sample(textureSampler, input.TextureCoord).rgb;
 	float3 position = texturePos.Sample(textureSampler, input.TextureCoord).rgb;
-	float3 finalNormal = textureNormalMap.Sample(textureSampler, input.TextureCoord).rgb;
 	psOut.colour = (float4)(diffuse, 1.0f);
 	float4 totalLights;
 	/*for (int i = 0; i < 2; i++)
@@ -135,7 +133,7 @@ PixelOut main(GS_OUT input)
 
 		// Without normal mapping
 		float3 lightDir = normalize(light[i].position - position);
-		float diffuseFactor = dot(lightDir, finalNormal);
+		float diffuseFactor = dot(lightDir, normal);
 
 		if (diffuseFactor < 0.0f)
 		{
@@ -150,8 +148,8 @@ PixelOut main(GS_OUT input)
 
 		// Specular light / Phong shading
 		float3 viewDir = normalize(input.camPos - position);
-		float3 ref = pow(max((2.25f * (normalize(light[i].position - position) * finalNormal)) * finalNormal - normalize(light[i].position - position), 0), 10.f);
-		float t = dot(ref, finalNormal);
+		float3 ref = pow(max((2.25f * (normalize(light[i].position - position) * normal)) * normal - normalize(light[i].position - position), 0), 10.f);
+		float t = dot(ref, normal);
 		if (t < 0.0f)
 		{
 			t = 0.0f;
@@ -178,7 +176,7 @@ PixelOut main(GS_OUT input)
 		psOut.colour = float4(diffuse + specular, 1.0f);
 		break;
 	case 4: //Unused. (Could use for normal mapping)
-		psOut.colour = float4(finalNormal, 1.0f);
+		psOut.colour = float4(normal, 1.0f);
 		break;
 	}
 

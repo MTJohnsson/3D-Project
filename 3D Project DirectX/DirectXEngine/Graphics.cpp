@@ -24,6 +24,8 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 		return false;
 	if (!bufferDisplayBuffer.Initialize(device))
 		return false;
+	if (!MatrixBuffer.Initialize(device))
+		return false;
 	if (!InitializeShaders())
 		return false;
 	if (!InitializeScene())
@@ -32,6 +34,7 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 	//objects.InitializeGameObjects(device, deviceContext, shader, shader2);
 	//objects.InitializeGameObjects(device, deviceContext, &deferredShaders, &deferredShadersNormalMapping);
 	objects.InitializeGameObjects(device, deviceContext, &deferredShadersNormalMapping, deferredShaders);
+
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -101,15 +104,13 @@ void Graphics::FirstRender() {
 	ID3D11RenderTargetView* renderTargetViews[] = {
 		renderBuffers[0].renderTarget,
 		renderBuffers[1].renderTarget,
-		renderBuffers[2].renderTarget,
-		renderBuffers[3].renderTarget
+		renderBuffers[2].renderTarget
 	};
 	deviceContext->OMSetRenderTargets(BUFFERS, renderTargetViews, renderDepthStencil);
 
 	deviceContext->ClearRenderTargetView(renderBuffers[0].renderTarget, cyan);
 	deviceContext->ClearRenderTargetView(renderBuffers[1].renderTarget, black);
 	deviceContext->ClearRenderTargetView(renderBuffers[2].renderTarget, yellow);
-	deviceContext->ClearRenderTargetView(renderBuffers[3].renderTarget, white);
 	deviceContext->ClearDepthStencilView(renderDepthStencil, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -129,7 +130,6 @@ void Graphics::LastRender() {
 	deviceContext->PSSetShaderResources(2, 1, &renderBuffers[0].shaderResource);
 	deviceContext->PSSetShaderResources(3, 1, &renderBuffers[1].shaderResource);
 	deviceContext->PSSetShaderResources(4, 1, &renderBuffers[2].shaderResource);
-	deviceContext->PSSetShaderResources(5, 1, &renderBuffers[3].shaderResource);
 
 
 	bufferDisplayBuffer.data.display = deferredBufferDisplay;
@@ -152,7 +152,6 @@ void Graphics::LastRender() {
 	deviceContext->PSSetShaderResources(2, 1, &nullsrv);
 	deviceContext->PSSetShaderResources(3, 1, &nullsrv);
 	deviceContext->PSSetShaderResources(4, 1, &nullsrv);
-	deviceContext->PSSetShaderResources(5, 1, &nullsrv);
 	deviceContext->GSSetShader(NULL, NULL, 0);
 }
 
@@ -175,6 +174,9 @@ void Graphics::DrawPass(float dt, float x, float y) {
 
 	Picking(x, y);
 	
+	deviceContext->OMSetDepthStencilState(depthStencilState, 0);
+	objects.renderSkybox(camera->GetViewMatrix(), camera->GetProjectionMatrix(), camera->GetPositionFloat3());
+
 	//draw objects
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
 }
@@ -559,7 +561,7 @@ Graphics::~Graphics()
 	this->rasterizerState->Release();
 	this->depthStencilBuffer->Release();
 	this->depthStencilView->Release();
-	//this->depthStencilState->Release();
+	this->depthStencilState->Release();
 
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -672,6 +674,7 @@ bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
 		MessageBox(NULL, "CreateTexture2D Failed.", "Failed to create depthStencilDesc", MB_OK);
 		return false;
 	}
+
 	hr = device->CreateDepthStencilView(depthStencilBuffer, NULL, &depthStencilView);
 	if (FAILED(hr))
 	{
@@ -708,6 +711,21 @@ bool Graphics::InitializeDirectX(HWND hwnd, int width, int height)
 			"D3D11 Initialisation Error", MB_OK);
 		return false;
 	}
+
+	D3D11_DEPTH_STENCIL_DESC dssDesc;
+	ZeroMemory(&dssDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+	dssDesc.DepthEnable = true;
+	dssDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dssDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+	hr = device->CreateDepthStencilState(&dssDesc, &depthStencilState);
+	if(FAILED(hr))
+	{
+		MessageBox(NULL, "Failed to create depth stencil state.",
+			"D3D11 Initialisation Error", MB_OK);
+		return false;
+	}
+
 	return true;
 }
 

@@ -6,6 +6,8 @@
 #include "Lights.h"
 #include "Mesh/Terrain.h"
 #include "Particle.h"
+#include "Skybox.h"
+
 #include <SimpleMath.h>
 #include "DirectXHelp.h"
 using namespace DirectX::SimpleMath;
@@ -18,6 +20,9 @@ private:
 	Terrain* terrain;
 
 	Particle* particles;
+
+	//Skybox
+	Skybox skybox;
 
 	ID3D11Device* device = nullptr;
 	ID3D11DeviceContext* deviceContext = nullptr;
@@ -67,6 +72,7 @@ public:
 	bool InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContext * deviceContext, Shader *shader, Shader *shader2);
 	bool CreatePrimitive(PRIMITIVIES primitivies);
 	float render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt);
+	void renderSkybox(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos);
 	~GameObjects();
 };
 #endif // !OBJMODEL_H

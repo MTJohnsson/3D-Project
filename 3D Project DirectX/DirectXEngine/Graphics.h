@@ -29,7 +29,7 @@ struct RenderTarget {
 	ID3D11RenderTargetView* renderTarget = nullptr;
 	ID3D11ShaderResourceView* shaderResource = nullptr;
 };
-const UINT BUFFERS = 4;
+const UINT BUFFERS = 3;
 
 class Graphics
 {
@@ -77,6 +77,7 @@ private:
 	//ID3D11DeviceContext* deviceContext = nullptr;
 
 	ConstantBuffer<LIGHT> LightBuffer;
+	ConstantBuffer<PerFrameMatrices> MatrixBuffer;
 
 	//Deferred Render
 	RenderTarget renderBuffers[BUFFERS];
@@ -106,7 +107,7 @@ private:
 	ID3D11Texture2D* depthStencilBuffer;
 	ID3D11DepthStencilView* depthStencilView;
 	//om både befinner sig på samma zeta ifrån kammran vill man se den röda trianglen istället för gröna i exemplet
-	//ID3D11DepthStencilState* depthStencilState;
+	ID3D11DepthStencilState* depthStencilState;
 
 	//sampler state for texturing
 	ID3D11SamplerState*samplerState;
