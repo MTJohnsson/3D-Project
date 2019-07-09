@@ -1,11 +1,11 @@
 #include"Skybox.h"
 
-
+//Public
 Skybox::Skybox()
 {
 	Vertex cubeTemp[] =
-	{
-		-SKYBOX_WIDTH,  SKYBOX_HEIGHT, -SKYBOX_WIDTH,1.0f,
+	{ //Width for x/z, Height for y
+		-SKYBOX_WIDTH,  SKYBOX_HEIGHT, -SKYBOX_WIDTH,1.0f, 
 		-SKYBOX_WIDTH, -SKYBOX_HEIGHT, -SKYBOX_WIDTH,1.0f,
 		 SKYBOX_WIDTH, -SKYBOX_HEIGHT, -SKYBOX_WIDTH,1.0f,
 		 SKYBOX_WIDTH,  SKYBOX_HEIGHT, -SKYBOX_WIDTH,1.0f,
@@ -23,7 +23,6 @@ Skybox::Skybox()
 		0, 3, 7, 7, 5, 0,
 		1, 4, 2, 2, 4, 6
 	};
-	//all the vertices inserted into cubetemp then into this->cube
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -35,7 +34,7 @@ Skybox::Skybox()
 		this->indices.push_back(index[i]);
 	}
 	this->cubeSRV = nullptr;
-	this->cubeTex = nullptr;
+	this->cubeTexture = nullptr;
 }
 
 Skybox::~Skybox()
@@ -47,41 +46,16 @@ void Skybox::shutDown()
 {
 	for (int i = 0; i < 6; i++)
 	{
-		this->textureLoad[i].Shutdown();
+		this->tgaTextures[i].Shutdown();
 	}
+	this->cubeTexture->Release();
 	this->cubeSRV->Release();
-	this->cubeTex->Release();
 
-	this->ps->Release();
-	this->vs->Release();
+	this->skyboxPS->Release();
+	this->skyboxVS->Release();
 	this->samplerState->Release();
 	this->vertexLayout->Release();
 	this->indexBuffer->Release();
-}
-
-bool Skybox::setWorld(XMMATRIX world, ID3D11DeviceContext* context)
-{
-	world = XMMatrixTranspose(world);
-	this->perFrameCB.data.world = world;
-	this->perFrameCB.updateConstantBuffer(context);
-	return true;
-}
-
-bool Skybox::setViewProj(DirectX::XMMATRIX view, DirectX::XMMATRIX proj, ID3D11DeviceContext* context)
-{
-	view = XMMatrixTranspose(view);
-	proj = XMMatrixTranspose(proj);
-	this->perFrameCB.data.view = view;
-	this->perFrameCB.data.projection = proj;
-	//need to set campos separately to enable check for backface culling
-	//this->perFrameCB.data.camPos = camPos; 
-	this->perFrameCB.updateConstantBuffer(context);
-	return true;
-}
-
-void Skybox::setCB(ID3D11DeviceContext* context)
-{
-	context->VSSetConstantBuffers(0, 1, this->perFrameCB.getConstantBuffer());
 }
 
 bool Skybox::initialize(ID3D11Device* device)
@@ -98,7 +72,7 @@ bool Skybox::initialize(ID3D11Device* device)
 	D3D11_SUBRESOURCE_DATA iinitData;
 
 	iinitData.pSysMem = indices.data();
-	
+
 	if (FAILED(device->CreateBuffer(&indexBufferDesc, &iinitData, &indexBuffer)))
 	{
 		return false;
@@ -107,7 +81,7 @@ bool Skybox::initialize(ID3D11Device* device)
 	{
 		return false;
 	}
-	this->perFrameCB.Initialize(device);
+	this->matrixConstBuffer.Initialize(device);
 	if (!this->initializeShaders(device))
 	{
 		return false;
@@ -115,9 +89,69 @@ bool Skybox::initialize(ID3D11Device* device)
 	return true;
 }
 
-bool Skybox::render(ID3D11DeviceContext* context)
+bool Skybox::setTexture(ID3D11Device* device, ID3D11DeviceContext* context, std::string file)
 {
+	std::string fileDir = "ObjFiles/";
+	std::string fileRight, fileLeft, fileUp, fileDown, fileBack, fileFront;
+
+	fileRight = fileDir + file + "_rt.tga";
+	fileLeft = fileDir + file + "_lf.tga";
+	fileUp = fileDir + file + "_up.tga";
+	fileDown = fileDir + file + "_dn.tga";
+	fileBack = fileDir + file + "_bk.tga";
+	fileFront = fileDir + file + "_ft.tga";
 	
+	tgaTextures[0].Initialize(device, context, fileRight.c_str());
+	tgaTextures[1].Initialize(device, context, fileLeft.c_str());
+	tgaTextures[2].Initialize(device, context, fileUp.c_str());
+	tgaTextures[3].Initialize(device, context, fileDown.c_str());
+	tgaTextures[4].Initialize(device, context, fileBack.c_str());
+	tgaTextures[5].Initialize(device, context, fileFront.c_str());
+
+	D3D11_TEXTURE2D_DESC texDesc;
+	texDesc.Width = tgaTextures[0].getWidth();//Every texture has the same width and height
+	texDesc.Height = tgaTextures[0].getHeight();
+	texDesc.MipLevels = 1;
+	texDesc.ArraySize = 6;//6 for all the faces of a cube
+	texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	texDesc.CPUAccessFlags = 0;
+	texDesc.SampleDesc.Count = 1;
+	texDesc.SampleDesc.Quality = 0;
+	texDesc.Usage = D3D11_USAGE_DEFAULT;
+	texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	texDesc.CPUAccessFlags = 0;
+	texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;//TextureCube
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
+	SRVDesc.Format = texDesc.Format;
+	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+	SRVDesc.TextureCube.MipLevels = texDesc.MipLevels;
+	SRVDesc.TextureCube.MostDetailedMip = 0;
+
+	D3D11_SUBRESOURCE_DATA pData[6];
+	for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < 6; cubeMapFaceIndex++)
+	{
+		pData[cubeMapFaceIndex].pSysMem = this->tgaTextures[cubeMapFaceIndex].getTextureArrayOfChar();
+		pData[cubeMapFaceIndex].SysMemPitch = this->tgaTextures[cubeMapFaceIndex].getWidth() * 4;
+		pData[cubeMapFaceIndex].SysMemSlicePitch = 0;
+	}
+	HRESULT hr = device->CreateTexture2D(&texDesc,
+		pData, &cubeTexture);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+	hr = device->CreateShaderResourceView(
+		cubeTexture, &SRVDesc, &cubeSRV);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+	return true;
+}
+
+bool Skybox::renderSkybox(ID3D11DeviceContext* context)
+{
+
 	//Setvertexbandtexture
 	UINT32 vertexSize = sizeof(Vertex);
 
@@ -129,11 +163,11 @@ bool Skybox::render(ID3D11DeviceContext* context)
 	context->PSSetSamplers(0, 1, &this->samplerState);
 
 	//render shader
-	context->VSSetShader(this->vs, nullptr, 0);
+	context->VSSetShader(this->skyboxVS, nullptr, 0);
 	context->HSSetShader(nullptr, nullptr, 0);
 	context->DSSetShader(nullptr, nullptr, 0);
 	context->GSSetShader(nullptr, nullptr, 0);
-	context->PSSetShader(this->ps, nullptr, 0);
+	context->PSSetShader(this->skyboxPS, nullptr, 0);
 	context->IASetInputLayout(this->vertexLayout);
 
 	context->DrawIndexed(36, 0, 0);
@@ -141,61 +175,32 @@ bool Skybox::render(ID3D11DeviceContext* context)
 	return true;
 }
 
-bool Skybox::setTexture(ID3D11Device* device, ID3D11DeviceContext* context, std::string file)
+bool Skybox::setWorldMatrix(XMMATRIX world, ID3D11DeviceContext* context)
 {
-	std::string fileName = "ObjFiles/" + file + "_rt.tga";//right
-	textureLoad[0].Initialize(device, context, fileName.c_str());
-	fileName = "ObjFiles/" + file + "_lf.tga";//left
-	textureLoad[1].Initialize(device, context, fileName.c_str());
-	fileName = "ObjFiles/" + file + "_up.tga";//up
-	textureLoad[2].Initialize(device, context, fileName.c_str());
-	fileName = "ObjFiles/" + file + "_dn.tga";//down
-	textureLoad[3].Initialize(device, context, fileName.c_str());
-	fileName = "ObjFiles/" + file + "_bk.tga";//back
-	textureLoad[4].Initialize(device, context, fileName.c_str());
-	fileName = "ObjFiles/" + file + "_ft.tga";//forward
-	textureLoad[5].Initialize(device, context, fileName.c_str());
-	D3D11_TEXTURE2D_DESC texDesc;
-	texDesc.Width = textureLoad[0].getWidth();//Every texture has the same width and height
-	texDesc.Height = textureLoad[0].getHeight();
-	texDesc.MipLevels = 1;
-	texDesc.ArraySize = 6;//6 for all the faces of a cube
-	texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	texDesc.CPUAccessFlags = 0;
-	texDesc.SampleDesc.Count = 1;
-	texDesc.SampleDesc.Quality = 0;
-	texDesc.Usage = D3D11_USAGE_DEFAULT;
-	texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	texDesc.CPUAccessFlags = 0;
-	texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;//TextureCube
-	D3D11_SHADER_RESOURCE_VIEW_DESC SMViewDesc;
-	SMViewDesc.Format = texDesc.Format;
-	SMViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-	SMViewDesc.TextureCube.MipLevels = texDesc.MipLevels;
-	SMViewDesc.TextureCube.MostDetailedMip = 0;
-
-	D3D11_SUBRESOURCE_DATA pData[6];
-	for (int cubeMapFaceIndex = 0; cubeMapFaceIndex < 6; cubeMapFaceIndex++)
-	{
-		pData[cubeMapFaceIndex].pSysMem = this->textureLoad[cubeMapFaceIndex].getTextureArrayOfChar();
-		pData[cubeMapFaceIndex].SysMemPitch = this->textureLoad[cubeMapFaceIndex].getWidth() * 4;
-		pData[cubeMapFaceIndex].SysMemSlicePitch = 0;
-	}
-	HRESULT hr = device->CreateTexture2D(&texDesc,
-		pData, &cubeTex);
-	if (FAILED(hr))
-	{
-		return false;
-	}
-	hr = device->CreateShaderResourceView(
-		cubeTex, &SMViewDesc, &cubeSRV);
-	if (FAILED(hr))
-	{
-		return false;
-	}
+	world = XMMatrixTranspose(world);
+	this->matrixConstBuffer.data.world = world;
+	this->matrixConstBuffer.updateConstantBuffer(context);
 	return true;
 }
 
+bool Skybox::setViewProjMatrix(DirectX::XMMATRIX view, DirectX::XMMATRIX proj, ID3D11DeviceContext* context)
+{
+	view = XMMatrixTranspose(view);
+	proj = XMMatrixTranspose(proj);
+	this->matrixConstBuffer.data.view = view;
+	this->matrixConstBuffer.data.projection = proj;
+	//need to set campos separately to enable check for backface culling
+	//this->perFrameCB.data.camPos = camPos; 
+	this->matrixConstBuffer.updateConstantBuffer(context);
+	return true;
+}
+
+void Skybox::setCB(ID3D11DeviceContext* context)
+{
+	context->VSSetConstantBuffers(0, 1, this->matrixConstBuffer.getConstantBuffer());
+}
+
+//Private
 bool Skybox::initializeShaders(ID3D11Device* device)
 {
 	ID3DBlob* pVS = nullptr;
@@ -236,7 +241,7 @@ bool Skybox::initializeShaders(ID3D11Device* device)
 		pVS->GetBufferPointer(),
 		pVS->GetBufferSize(),
 		nullptr,
-		&vs
+		&skyboxVS
 	);
 
 	// create input layout (verified using vertex shader)
@@ -297,7 +302,11 @@ bool Skybox::initializeShaders(ID3D11Device* device)
 		return false;
 	}
 
-	device->CreatePixelShader(pPS->GetBufferPointer(), pPS->GetBufferSize(), nullptr, &ps);
+	device->CreatePixelShader(
+		pPS->GetBufferPointer(),
+		pPS->GetBufferSize(),
+		nullptr,
+		&skyboxPS);
 	// we do not need anymore this COM object, so we release it.
 	pPS->Release();
 

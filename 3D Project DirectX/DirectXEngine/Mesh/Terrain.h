@@ -23,7 +23,7 @@ struct Vertex3
 {
 	float x, y, z;
 	float xn, yn, zn;	// normals
-	float coordX, coordY;
+	float coordU, coordV;
 	float r, g, b;
 };
 
@@ -79,7 +79,7 @@ private:
 
 	// Ground Intersection
 	void findNearestVertecies(XMFLOAT3 camPos);
-	float barryCentric(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT2 pos);
+	float baryCentric(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT2 pos);
 
 	std::vector<Vertex3> nearestVertecies;
 

@@ -132,6 +132,7 @@ float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, f
 
 	constantBuffer.data.world = terrain->getWorld();
 	constantBuffer.updateConstantBuffer(deviceContext);
+	
 	this->deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
 	this->terrain->draw();
 
@@ -144,11 +145,11 @@ void GameObjects::renderSkybox(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camP
 	XMMATRIX scale = XMMatrixScaling(5.0f, 5.0f, 5.0f);
 	XMMATRIX translation = XMMatrixTranslation(camPos.x, camPos.y, camPos.z);
 	skyWorld = scale * translation;
-	this->skybox.setWorld(skyWorld, this->deviceContext);
-	this->skybox.setViewProj(view, projection, this->deviceContext);
+	this->skybox.setWorldMatrix(skyWorld, this->deviceContext);
+	this->skybox.setViewProjMatrix(view, projection, this->deviceContext);
 	this->skybox.setCB(this->deviceContext);
 
-	this->skybox.render(this->deviceContext);
+	this->skybox.renderSkybox(this->deviceContext);
 }
 GameObjects::~GameObjects()
 {

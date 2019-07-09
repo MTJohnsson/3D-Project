@@ -73,6 +73,7 @@ PixelOut main(GS_OUT input)
 {
 	PixelOut psOut;
 	float3 normal = textureNormal.Sample(textureSampler, input.TextureCoord).rgb;
+	float check = textureNormal.Sample(textureSampler, input.TextureCoord).w;
 	float3 diffuse = textureTexture.Sample(textureSampler, input.TextureCoord).rgb;
 	float3 position = texturePos.Sample(textureSampler, input.TextureCoord).rgb;
 	psOut.colour = (float4)(diffuse, 1.0f);
@@ -92,6 +93,17 @@ PixelOut main(GS_OUT input)
 	float4 ambient = float4(0.2f, 0.2f, 0.2f, 1.0f); // ambiant light
 	float4 final_color = float4((1.0f, 1.0f, 1.0f) * ambient.xyz, 1);
 
+	float specularStrength = 0.5f;
+	float3 viewDirection = normalize(input.camPos - position);
+	float3 reflectDirection = reflect((-viewDirection), normal);
+	float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 32);
+	float3 specular2 = specularStrength * spec * light[0].LightColor;
+
+	float3 lightDirection = normalize(light[0].position - position);
+	float diffuseStrenght = max(dot(normal, lightDirection), 0.0f);
+	float3 diffuseFactor2 = diffuseStrenght * light[0].LightColor;
+	float3 finalColor = (ambient.xyz + diffuseFactor2 + specular2) * diffuse;
+	
 	for (int i = 0; i < 2; i++)
 	{
 		/*//float3 ambientLight = light[i].AmbientColor * light[i].AmbientLight;
@@ -148,8 +160,9 @@ PixelOut main(GS_OUT input)
 
 		// Specular light / Phong shading
 		float3 viewDir = normalize(input.camPos - position);
+		//float3 ref = reflect(-viewDir, normal);
 		float3 ref = pow(max((2.25f * (normalize(light[i].position - position) * normal)) * normal - normalize(light[i].position - position), 0), 10.f);
-		float t = dot(ref, normal);
+		float t = dot(ref, viewDir);
 		if (t < 0.0f)
 		{
 			t = 0.0f;
@@ -163,7 +176,7 @@ PixelOut main(GS_OUT input)
 	switch (display)
 	{
 	case 0: //All buffers
-		psOut.colour = float4(diffuse * final_color.xyz + specular, 1.0f);
+		psOut.colour = float4(diffuse * (final_color.xyz /*+ specular*/ + specular2), 1.0f);
 		break;
 	case 1: //Normal buffer only
 		psOut.colour = float4(normal, 1.0f);
@@ -173,10 +186,15 @@ PixelOut main(GS_OUT input)
 		psOut.colour = float4(depth, depth, depth, 1.0f);
 		break;
 	case 3: //Texture buffer only
-		psOut.colour = float4(diffuse + specular, 1.0f);
+		psOut.colour = float4(diffuse + specular2, 1.0f);
 		break;
 	case 4: //Unused. (Could use for normal mapping)
-		psOut.colour = float4(normal, 1.0f);
+		if (check == 1.0f) {
+			psOut.colour = float4(finalColor, 1.0f);
+		}
+		else {
+			psOut.colour = float4(diffuse + specular2, 1.0f);
+		}
 		break;
 	}
 

@@ -54,6 +54,10 @@ Terrain::Terrain(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 	}
 
 	hr = CreateWICTextureFromFile(device, L"textureTerrain.jpg", nullptr, texture.GetAddressOf());
+	if (FAILED(hr)) {
+		MessageBox(NULL, "Texture Failed.",
+			"CreateWICTexture Error", MB_OK);
+	}
 }
 
 void Terrain::draw()
@@ -75,7 +79,7 @@ void Terrain::draw()
 	this->deviceContext->GSSetShader(Graphics::deferredShaders->GetGeometryShader()->GetShader(), nullptr, 0);
 	this->deviceContext->PSSetShader(Graphics::deferredShaders->GetPixelShader()->GetShader(), NULL, 0);
 
-	//this->deviceContext->PSSetShaderResources(0, 1, texture.GetAddressOf());
+	this->deviceContext->PSSetShaderResources(0, 1, texture.GetAddressOf());
 
 	this->deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
 	this->deviceContext->Draw(this->indCount, 0);
@@ -84,8 +88,8 @@ void Terrain::draw()
 
 void Terrain::generateIndex()
 {
-	int c = 0;
-	int texC = 0;
+	int coord = 0;
+	int texCoord = 0;
 
 	for (int z = 0; z < this->TERR_WIDTH; z++)
 	{
@@ -93,9 +97,8 @@ void Terrain::generateIndex()
 		{
 			Vertex3 v;
 			v.x = x;
-			v.y = float(this->yValues.at(c) * 0.002);
+			v.y = float(this->yValues.at(coord) * 0.002);
 			v.z = z;
-
 
 			if (v.y == 0)
 			{
@@ -103,17 +106,17 @@ void Terrain::generateIndex()
 				v.g = 0.0f;
 				v.b = 1.0f;*/
 
-				if (texC == 0 || texC == 1)
+				if (texCoord == 0 || texCoord == 1)
 				{
-					v.coordX = 0.f;
-					v.coordY = 0.f;
-					texC++;
+					v.coordU = 0.f;
+					v.coordV = 0.f;
+					texCoord++;
 				}
-				else if (texC == 2)
+				else if (texCoord == 2)
 				{
-					v.coordX = 0.f;
-					v.coordY = 0.f;
-					texC = 0;
+					v.coordU = 0.f;
+					v.coordV = 0.f;
+					texCoord = 0;
 				}
 			}
 			else
@@ -122,28 +125,28 @@ void Terrain::generateIndex()
 				v.g = 0.5f;
 				v.b = 0.0f;*/
 
-				if (texC == 0)
+				if (texCoord == 0)
 				{
-					v.coordX = 0.f;
-					v.coordY = 1.f;
-					texC++;
+					v.coordU = 0.f;
+					v.coordV = 1.f;
+					texCoord++;
 				}
-				else if (texC == 1)
+				else if (texCoord == 1)
 				{
-					v.coordX = 0.f;
-					v.coordY = 0.f;
-					texC++;
+					v.coordU = 0.f;
+					v.coordV = 0.f;
+					texCoord++;
 				}
-				else if (texC == 2)
+				else if (texCoord == 2)
 				{
-					v.coordX = 1.f;
-					v.coordY = 0.f;
-					texC = 0;
+					v.coordU = 1.f;
+					v.coordV = 0.f;
+					texCoord = 0;
 				}
 			}
 
 			this->indices.push_back(v);
-			c++;
+			coord++;
 		}
 	}
 }
@@ -283,7 +286,7 @@ float Terrain::getHeight(XMFLOAT3 camPos)
 		v2 = XMFLOAT3(nearestVertecies[i + 1].x, nearestVertecies[i + 1].y, nearestVertecies[i + 1].z);
 		v3 = XMFLOAT3(nearestVertecies[i + 2].x, nearestVertecies[i + 2].y, nearestVertecies[i + 2].z);
 
-		f.emplace_back(barryCentric(v1, v2, v3, XMFLOAT2(camPos.x, camPos.z)));
+		f.emplace_back(baryCentric(v1, v2, v3, XMFLOAT2(camPos.x, camPos.z)));
 
 		i += 2;
 	}
@@ -296,7 +299,7 @@ float Terrain::getHeight(XMFLOAT3 camPos)
 
 void Terrain::generateVertex()
 {
-	int c = 0;
+	int coord = 0;
 	int l = 0;
 
 	for (int n = 0; n < this->indCount; n++)
@@ -306,19 +309,19 @@ void Terrain::generateVertex()
 
 	for (int i = 0; i < this->indCount; i += 6)
 	{
-		this->vertices[i] = c;
-		this->vertices[i + 1] = c + this->TERR_LENGTH;
-		this->vertices[i + 2] = c + this->TERR_LENGTH + 1;
-		this->vertices[i + 3] = c;
-		this->vertices[i + 4] = c + this->TERR_LENGTH + 1;
-		this->vertices[i + 5] = c + 1;
+		this->vertices[i] = coord;
+		this->vertices[i + 1] = coord + this->TERR_LENGTH;
+		this->vertices[i + 2] = coord + this->TERR_LENGTH + 1;
+		this->vertices[i + 3] = coord;
+		this->vertices[i + 4] = coord + this->TERR_LENGTH + 1;
+		this->vertices[i + 5] = coord + 1;
 
-		c++;
+		coord++;
 		l++;
 
 		if (l == this->TERR_LENGTH - 1)
 		{
-			c++;
+			coord++;
 			l = 0;
 		}
 	}
@@ -446,7 +449,7 @@ void Terrain::findNearestVertecies(XMFLOAT3 camPos)
 	}
 }
 
-float Terrain::barryCentric(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT2 pos)
+float Terrain::baryCentric(XMFLOAT3 p1, XMFLOAT3 p2, XMFLOAT3 p3, XMFLOAT2 pos)
 {
 	float det = (p2.z - p3.z) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.z - p3.z);
 	float l1 = ((p2.z - p3.z) * (pos.x - p3.x) + (p3.x - p2.x) * (pos.y - p3.z)) / det;

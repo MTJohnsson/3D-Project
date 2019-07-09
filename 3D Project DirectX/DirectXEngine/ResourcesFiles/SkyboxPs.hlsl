@@ -26,7 +26,7 @@ DeferredPixelOut main(VS_OUT input)
 	}
 	DefPOut.textBuffer = lerp(float4(0.0f, 2.0f, 2.0f, 1.0f), float4(0.0f, 10.0f, 10.0f, 1.0f), height);
 	*/
-	DefPOut.normalBuffer = float4(0.0f, 0.0f, 0.0f, 1.0f);
+	DefPOut.normalBuffer = float4(0.0f, 0.0f, 0.0f, 0.5f);
 	DefPOut.positionBuffer = float4(input.pos);
 
 	return DefPOut;

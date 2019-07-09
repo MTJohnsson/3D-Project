@@ -45,10 +45,14 @@ DeferredPixelOut main(GSOutput input)
 	float3 tangent = r * (edge1 * deltaUv2.y - edge2 * deltaUv1.y);
 	float3 bitangent = r * (edge2 * deltaUv1.x - edge1 * deltaUv2.x);
 
-	tangent = cross(bitangent, texNormal);
+	/*tangent = cross(bitangent, texNormal);
 	bitangent = cross(tangent, texNormal);
 
-	float3x3 TBN = float3x3(tangent, bitangent, input.normal);
+	float3x3 TBN = float3x3(tangent, bitangent, input.normal);*/
+
+	float3 tangent2 = cross(bitangent, texNormal);
+	float3 bitangent2 = cross(tangent, texNormal);
+	float3x3 TBN = float3x3(tangent2, bitangent2, input.normal);
 
 	float3 finalNormal = mul(texNormal, TBN);
 
