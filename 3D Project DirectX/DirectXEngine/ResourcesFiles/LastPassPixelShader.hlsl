@@ -171,12 +171,15 @@ PixelOut main(GS_OUT input)
 		
 	}
 
-	//psOut.colour = float4(diffuse, 1.0f);
-	//psOut.colour = float4(normal, 1.0f);
 	switch (display)
 	{
 	case 0: //All buffers
-		psOut.colour = float4(diffuse * (final_color.xyz /*+ specular*/ + specular2), 1.0f);
+		if (check == 1.0f) {
+			psOut.colour = float4(finalColor, 1.0f);
+		}
+		else {
+			psOut.colour = float4(diffuse + specular2, 1.0f);
+		}
 		break;
 	case 1: //Normal buffer only
 		psOut.colour = float4(normal, 1.0f);
@@ -185,17 +188,15 @@ PixelOut main(GS_OUT input)
 		float depth = texturePos.Sample(textureSampler, input.TextureCoord).b;
 		psOut.colour = float4(depth, depth, depth, 1.0f);
 		break;
-	case 3: //Texture buffer only
-		psOut.colour = float4(diffuse + specular2, 1.0f);
+	case 3: //Without Specular
+		psOut.colour = float4((ambient.xyz + diffuseFactor2) * diffuse, 1.0f);
 		break;
-	case 4: //Unused. (Could use for normal mapping)
-		if (check == 1.0f) {
-			psOut.colour = float4(finalColor, 1.0f);
-		}
-		else {
-			psOut.colour = float4(diffuse + specular2, 1.0f);
-		}
+	case 4: //Without Diffuse
+		psOut.colour = float4((ambient.xyz + specular2) * diffuse, 1.0f);
 		break;
+	case 5: //Without Ambient
+		psOut.colour = float4((specular2 + diffuseFactor2) * diffuse, 1.0f);
+	break;
 	}
 
 

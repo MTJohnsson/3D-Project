@@ -32,9 +32,9 @@ void Engine::Update()
 	bool mouseClicked = false;
 	if (state.rightButton)
 	{
- 		mouse->SetMode(Mouse::MODE_RELATIVE);
-		gfx.camera->AdjustRotation((float)state.y * 0.05f * dt,
-			(float)state.x * 0.05f * dt, 0);
+		mouse->SetMode(Mouse::MODE_RELATIVE);
+		gfx.camera->AdjustRotation((float)state.y * 0.005f * dt,
+			(float)state.x * 0.005f * dt, 0);
 	}
 	// Mouse picking
 	else if (state.leftButton)

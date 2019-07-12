@@ -171,7 +171,7 @@ void Graphics::DrawPass(float dt, float x, float y) {
 
 	// Move camera depending on the height of the ground beneath, use float that is returned from objects.render()
 	camera->SetPosition(camera->GetPositionFloat3().x, camera->GetPositionFloat3().y - heightDifferance, camera->GetPositionFloat3().z);
-
+	
 	Picking(x, y);
 	
 	deviceContext->OMSetDepthStencilState(depthStencilState, 0);
@@ -597,7 +597,7 @@ void Graphics::updateImguie(float dt)
 	ImGui::Text("frame (%.1f FPS)", 1000.0f / dt);
 	//ImGui::SliderFloat("Dist", (float*)&dist, -10.05f, 10.05f);
 	//ImGui::SliderFloat("Up/Down ", (float*)&distZ, -1.05f, 1.05f);
-	ImGui::SliderInt("Load Buffer: ", &deferredBufferDisplay, 0, 4);
+	ImGui::SliderInt("Load Buffer: ", &deferredBufferDisplay, 0, 5);
 	ImGui::Checkbox("BackFaceCull", &CullBackFace);
 	ImGui::Text("MousePosition ( %f , %f )", MousePosition.x, MousePosition.y);
 
