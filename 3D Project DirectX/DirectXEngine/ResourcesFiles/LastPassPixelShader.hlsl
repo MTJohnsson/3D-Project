@@ -103,10 +103,10 @@ PixelOut main(GS_OUT input)
 	float diffuseStrenght = max(dot(normal, lightDirection), 0.0f);
 	float3 diffuseFactor2 = diffuseStrenght * light[0].LightColor;
 	float3 finalColor = (ambient.xyz + diffuseFactor2 + specular2) * diffuse;
-	
-	for (int i = 0; i < 2; i++)
+
+	/* for (int i = 0; i < 2; i++)
 	{
-		/*//float3 ambientLight = light[i].AmbientColor * light[i].AmbientLight;
+		//float3 ambientLight = light[i].AmbientColor * light[i].AmbientLight;
 		//finalColor = float4(finalColor.xyz * ambientLight, 1);
 		////float intensity = CalculateLight(light[i].lightType, light[i].position, input.worldPos, input.normal);
 		////float intensity = SpotLight(light[i].position, input.worldPos);
@@ -141,7 +141,7 @@ PixelOut main(GS_OUT input)
 		//{
 		//    t = 0.0f;
 		//}
-		//specular += float3(0.1f, 0.1f, 0.1f) * t * 0.5f * (1.0 / length(normalize(light[i].position - input.worldPos)));*/
+		//specular += float3(0.1f, 0.1f, 0.1f) * t * 0.5f * (1.0 / length(normalize(light[i].position - input.worldPos)));
 
 		// Without normal mapping
 		float3 lightDir = normalize(light[i].position - position);
@@ -169,7 +169,7 @@ PixelOut main(GS_OUT input)
 		}
 		specular += float3(0.1f, 0.1f, 0.1f) * t * 0.5f * (1.0f / length(normalize(light[i].position - position)));
 		
-	}
+	}*/
 
 	switch (display)
 	{

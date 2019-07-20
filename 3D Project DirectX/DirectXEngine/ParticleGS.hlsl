@@ -28,13 +28,13 @@ void main(point GS_IN input[1], inout TriangleStream<GSOutput> OutputStream)
 {
 	GSOutput output;
 	//	float3 up = (0, 1, 0);
-	float3 Normal = input[0].Pos - camPos.xyz;
+	float3 Normal = camPos.xyz - input[0].Pos;
 	Normal = normalize(Normal);
 	// right = up x F 
-	float3 right = cross(Normal, upp);
+	float3 right = cross(upp, Normal);
 	//blev fel här tidigare
 	//ordningen i cross producten är viktigt då den bestämmer riktning.
-	float3 up = normalize(cross(right, Normal));
+	float3 up = normalize(cross(Normal, right));
 	right = normalize(right);
 	float3 vert[4];
 	vert[0] = input[0].Pos + (-right); // Bottom left
