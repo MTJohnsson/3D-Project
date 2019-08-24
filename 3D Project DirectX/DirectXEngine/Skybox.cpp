@@ -82,6 +82,7 @@ bool Skybox::initialize(ID3D11Device* device)
 		return false;
 	}
 	this->matrixConstBuffer.Initialize(device);
+	this->worldConstBuffer.Initialize(device);
 	if (!this->initializeShaders(device))
 	{
 		return false;
@@ -178,8 +179,8 @@ bool Skybox::renderSkybox(ID3D11DeviceContext* context)
 bool Skybox::setWorldMatrix(XMMATRIX world, ID3D11DeviceContext* context)
 {
 	world = XMMatrixTranspose(world);
-	this->matrixConstBuffer.data.world = world;
-	this->matrixConstBuffer.updateConstantBuffer(context);
+	this->worldConstBuffer.data.world = world;
+	this->worldConstBuffer.updateConstantBuffer(context);
 	return true;
 }
 
@@ -198,6 +199,7 @@ bool Skybox::setViewProjMatrix(DirectX::XMMATRIX view, DirectX::XMMATRIX proj, I
 void Skybox::setCB(ID3D11DeviceContext* context)
 {
 	context->VSSetConstantBuffers(0, 1, this->matrixConstBuffer.getConstantBuffer());
+	context->VSSetConstantBuffers(1, 1, this->worldConstBuffer.getConstantBuffer());
 }
 
 //Private

@@ -25,13 +25,14 @@ struct LIGHT {
 	LightPixelShader Light[2];
 };
 struct PerFrameMatrices {
-	XMMATRIX world;
 	XMMATRIX view;
 	XMMATRIX projection;
 	XMFLOAT3 camPos;
 	float padding;	//4 nu 16
 };
-
+struct PerObjectMatrices {
+	XMMATRIX world;
+};
 
 
 #endif // !HELPER_H

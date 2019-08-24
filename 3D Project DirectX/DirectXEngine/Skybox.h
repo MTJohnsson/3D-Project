@@ -8,11 +8,13 @@
 #define SKYBOX_HEIGHT 1.0f
 
 struct SkyboxMatricies {
-	XMMATRIX world;
 	XMMATRIX view;
 	XMMATRIX projection;
 	XMFLOAT3 camPos;
 	float padding;	//4 nu 16
+};
+struct SkyboxWorldMatrix {
+	XMMATRIX world;
 };
 
 class Skybox
@@ -35,6 +37,7 @@ private:
 	VertexBuffer<Vertex> vertexBuffer;
 	ID3D11Buffer* indexBuffer;
 	ConstantBuffer<SkyboxMatricies> matrixConstBuffer;
+	ConstantBuffer<SkyboxWorldMatrix> worldConstBuffer;
 	ID3D11PixelShader *skyboxPS;
 	ID3D11VertexShader *skyboxVS;
 	ID3D11InputLayout *vertexLayout;

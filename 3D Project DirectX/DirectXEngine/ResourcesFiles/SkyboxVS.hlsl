@@ -12,11 +12,15 @@ struct VS_OUT
 cbuffer CB_PER_FRAME : register(b0)
 {
 	// MVP
-	float4x4 world; //16byte
 	float4x4 view; //16
 	float4x4 projection;
 	float3 camPos; //12
 	float padding; //4 now 16
+}
+
+cbuffer CB_PER_SKYBOX : register(b1)
+{
+	float4x4 world; //16byte
 }
 
 VS_OUT main(VS_IN input) {

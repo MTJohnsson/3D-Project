@@ -27,7 +27,8 @@ private:
 	ID3D11Device* device = nullptr;
 	ID3D11DeviceContext* deviceContext = nullptr;
 	float gIncrement = 0;
-	ConstantBuffer<PerFrameMatrices> constantBuffer;
+	ConstantBuffer<PerFrameMatrices> constantBufferPerFrame;
+	ConstantBuffer<PerObjectMatrices> constantBufferWorld;
 
 	void normalize(XMFLOAT3& vector)
 	{

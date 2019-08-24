@@ -15,14 +15,10 @@ struct GS_OUT
 	float3 camPos : CAMPOS;
 };
 
-cbuffer CB_PER_FRAME : register(b0)
+cbuffer DISPLAY : register(b0)
 {
-	// MVP
-	float4x4 world; //16byte
-	float4x4 view; //16
-	float4x4 projection;
-	float3 camPos; //12
-	float padding; //4 now 16
+	float display;
+	float3 camPos;
 }
 
 [maxvertexcount(3)]

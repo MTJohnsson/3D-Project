@@ -16,11 +16,15 @@ cbuffer camVector : register(b1)
 cbuffer CB_PER_FRAME : register(b0)
 {
 	// MVP
-	float4x4 world; //16byte
 	float4x4 view; //16
 	float4x4 projection;
 	float3 camPos; //12
 	float padding; //4 now 16
+}
+
+cbuffer CB_PER_OBJECT : register(b2)
+{
+	float4x4 world; //16byte
 }
 
 [maxvertexcount(4)]

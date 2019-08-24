@@ -96,7 +96,7 @@ Particle::~Particle()
 {
 }
 
-void Particle::draw(ConstantBuffer<PerFrameMatrices> constantBuffer)
+void Particle::draw(ConstantBuffer<PerFrameMatrices> constantBuffer, ConstantBuffer<PerObjectMatrices> world)
 {
 	float blendFactor[4] = { 1.25f, 1.25f, 1.25f, 0.0f };
 	Graphics::deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -142,10 +142,11 @@ void Particle::draw(ConstantBuffer<PerFrameMatrices> constantBuffer)
 	this->camUp.updateConstantBuffer(Graphics::deviceContext);
 
 
-	constantBuffer.data.world = XMMatrixIdentity();
-	constantBuffer.updateConstantBuffer(Graphics::deviceContext);
+	world.data.world = XMMatrixIdentity();
+	world.updateConstantBuffer(Graphics::deviceContext);
 	Graphics::deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
 	Graphics::deviceContext->GSSetConstantBuffers(1, 1, camUp.getConstantBuffer());
+	Graphics::deviceContext->GSSetConstantBuffers(2, 1, constantBuffer.getConstantBuffer());
 
 	Graphics::deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 	Graphics::deviceContext->PSSetShaderResources(0, 1, texture.getTextureView());

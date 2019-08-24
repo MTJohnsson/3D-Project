@@ -31,7 +31,7 @@ private:
 public:
 	Particle();
 	~Particle();
-	void draw(ConstantBuffer<PerFrameMatrices> constantBuffer);
+	void draw(ConstantBuffer<PerFrameMatrices> constantBuffer, ConstantBuffer<PerObjectMatrices> world);
 };
 
 #endif // ! PARTICLE_H

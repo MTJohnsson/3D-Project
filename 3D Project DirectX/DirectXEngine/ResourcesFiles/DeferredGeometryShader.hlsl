@@ -23,11 +23,15 @@ struct GSOutput
 cbuffer CB_PER_FRAME : register(b0)
 {
 	// MVP
-	float4x4 world; //16byte
 	float4x4 view; //16
 	float4x4 projection;
 	float3 camPos; //12
 	float padding; //4 now 16
+}
+
+cbuffer CB_PER_FRAME : register(b1)
+{
+	float4x4 world; //16byte
 }
 
 [maxvertexcount(3)]
@@ -35,24 +39,12 @@ void main(triangle GS_IN input[3], inout TriangleStream<GSOutput> OutputStream)
 {
 	GSOutput output;
 
-
-
-	//float3 u = (float3)(input[1].Pos - input[0].Pos);
-	//float3 v = (float3)(input[2].Pos - input[0].Pos);
-	//float3 normal = normalize(cross(u, v));
-
 	// normal map
 	float2 deltaUV1 = input[1].tex - input[0].tex;
 	float2 deltaUV2 = input[2].tex - input[0].tex;
 
 	matrix mvp = mul(projection, mul(view, world));
 
-	//float3 center = (input[0].Pos + input[1].Pos + input[2].Pos) / 3;
-	//normal = normalize(mul((float3x3) world, normal));
-	//float3 posnw = mul((float3x3)world, center);
-
-	//float3 direction = camPos - posnw;
-	//if (dot(normal, direction) >= 0.0f)
 	float3 pos0 = mul(world, float4(input[0].Pos.xyz, 1.0f)).xyz;
 	float3 pos1 = mul(world, float4(input[1].Pos.xyz, 1.0f)).xyz;
 	float3 pos2 = mul(world, float4(input[2].Pos.xyz, 1.0f)).xyz;

@@ -142,7 +142,6 @@
     <ClCompile Include="Particle.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="QuadTree.cpp" />
     <ClCompile Include="RenderWindow.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="TGATexture.cpp" />
@@ -177,7 +176,6 @@
     <ClInclude Include="Particle.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="QuadTree.h" />
     <ClInclude Include="RenderWindow.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="TGATexture.h" />

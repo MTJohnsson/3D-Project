@@ -35,7 +35,7 @@ cbuffer LIGHT : register(b0)
 cbuffer DISPLAY : register(b1)
 {
 	float display;
-	float3 padding;
+	float3 camPos;
 }
 
 float SpotLight(float3 pos, float3 worldPos)

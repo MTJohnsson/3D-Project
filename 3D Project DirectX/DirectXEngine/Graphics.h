@@ -22,7 +22,7 @@ static const float white[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 struct BufferDisplay {
 	float display;
-	XMFLOAT3 padding;
+	XMFLOAT3 camPos;
 };
 struct RenderTarget {
 	ID3D11Texture2D* textureTarget = nullptr;
@@ -77,7 +77,7 @@ private:
 	//ID3D11DeviceContext* deviceContext = nullptr;
 
 	ConstantBuffer<LIGHT> LightBuffer;
-	ConstantBuffer<PerFrameMatrices> MatrixBuffer;
+	//ConstantBuffer<PerFrameMatrices> MatrixBuffer;
 
 	//Deferred Render
 	RenderTarget renderBuffers[BUFFERS];

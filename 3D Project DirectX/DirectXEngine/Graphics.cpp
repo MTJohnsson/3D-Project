@@ -24,8 +24,8 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 		return false;
 	if (!bufferDisplayBuffer.Initialize(device))
 		return false;
-	if (!MatrixBuffer.Initialize(device))
-		return false;
+	/*if (!MatrixBuffer.Initialize(device))
+		return false;*/
 	if (!InitializeShaders())
 		return false;
 	if (!InitializeScene())
@@ -133,7 +133,9 @@ void Graphics::LastRender() {
 
 
 	bufferDisplayBuffer.data.display = deferredBufferDisplay;
+	bufferDisplayBuffer.data.camPos = camera->GetPositionFloat3();
 	bufferDisplayBuffer.updateConstantBuffer(deviceContext); //Fail
+	deviceContext->GSSetConstantBuffers(0, 1, bufferDisplayBuffer.getConstantBuffer());
 	deviceContext->PSSetConstantBuffers(1, 1, bufferDisplayBuffer.getConstantBuffer());
 
 	deviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
@@ -597,6 +599,26 @@ void Graphics::updateImguie(float dt)
 	ImGui::Text("frame (%.1f FPS)", 1000.0f / dt);
 	//ImGui::SliderFloat("Dist", (float*)&dist, -10.05f, 10.05f);
 	//ImGui::SliderFloat("Up/Down ", (float*)&distZ, -1.05f, 1.05f);
+	switch (deferredBufferDisplay) {
+	case 0:
+		ImGui::Text("[ Diffuse + Ambient + Specular ]");
+		break;
+	case 1:
+		ImGui::Text("[ Normal ]");
+		break;
+	case 2:
+		ImGui::Text("[ Depth ]");
+		break;
+	case 3:
+		ImGui::Text("[ Diffuse + Ambient ]");
+		break;
+	case 4:
+		ImGui::Text("[ Ambient + Specular ]");
+		break;
+	case 5:
+		ImGui::Text("[ Diffuse + Specular ]");
+		break;
+	}
 	ImGui::SliderInt("Load Buffer: ", &deferredBufferDisplay, 0, 5);
 	ImGui::Checkbox("BackFaceCull", &CullBackFace);
 	ImGui::Text("MousePosition ( %f , %f )", MousePosition.x, MousePosition.y);

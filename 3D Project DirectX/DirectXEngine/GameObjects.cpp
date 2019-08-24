@@ -59,7 +59,9 @@ bool GameObjects::InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContex
 
 	//CreatePrimitive(CUBE);
 
-	if (!constantBuffer.Initialize(device))
+	if (!constantBufferPerFrame.Initialize(device))
+		return false;
+	if (!constantBufferWorld.Initialize(device))
 		return false;
 	if (!skybox.initialize(this->device)) {
 		return false;
@@ -93,9 +95,10 @@ float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, f
 
 	gIncrement += dt*speed;
 
-	constantBuffer.data.camPos = camPos;
-	constantBuffer.data.view = view;
-	constantBuffer.data.projection = projection;
+	constantBufferPerFrame.data.camPos = camPos;
+	constantBufferPerFrame.data.view = view;
+	constantBufferPerFrame.data.projection = projection;
+	constantBufferPerFrame.updateConstantBuffer(deviceContext);
 
 	//render back to front
 	if (Graphics::FrontToBack) 
@@ -107,9 +110,10 @@ float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, f
 		{
 			meshes[index].setRotation(0.0f, 1.0, 0.0f, gIncrement * 0.2);
 		}
-		constantBuffer.data.world = meshes[index].getWorld();
-		constantBuffer.updateConstantBuffer(deviceContext);
-		deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
+		constantBufferWorld.data.world = meshes[index].getWorld();
+		constantBufferWorld.updateConstantBuffer(deviceContext);
+		deviceContext->GSSetConstantBuffers(0, 1, constantBufferPerFrame.getConstantBuffer());
+		deviceContext->GSSetConstantBuffers(1, 1, constantBufferWorld.getConstantBuffer());
 		meshes[index].draw();
 		
 	}
@@ -122,21 +126,23 @@ float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, f
 			{
 				meshes[i].setRotation(0.0f, 1.0, 0.0f, gIncrement * 0.2);
 			}
-			constantBuffer.data.world = meshes[i].getWorld();
-			constantBuffer.updateConstantBuffer(deviceContext);
-			deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
+			constantBufferWorld.data.world = meshes[i].getWorld();
+			constantBufferWorld.updateConstantBuffer(deviceContext);
+			deviceContext->GSSetConstantBuffers(0, 1, constantBufferPerFrame.getConstantBuffer());
+			deviceContext->GSSetConstantBuffers(1, 1, constantBufferWorld.getConstantBuffer());
 			meshes[i].draw();
 		}
 	}
 
 
-	constantBuffer.data.world = terrain->getWorld();
-	constantBuffer.updateConstantBuffer(deviceContext);
+	constantBufferWorld.data.world = terrain->getWorld();
+	constantBufferWorld.updateConstantBuffer(deviceContext);
 	
-	this->deviceContext->GSSetConstantBuffers(0, 1, constantBuffer.getConstantBuffer());
+	this->deviceContext->GSSetConstantBuffers(0, 1, constantBufferPerFrame.getConstantBuffer());
+	this->deviceContext->GSSetConstantBuffers(1, 1, constantBufferWorld.getConstantBuffer());
 	this->terrain->draw();
 
-	particles->draw(constantBuffer);
+	particles->draw(constantBufferPerFrame, constantBufferWorld);
 
 	return heightDifferance;
 }
@@ -158,6 +164,6 @@ GameObjects::~GameObjects()
 	meshes.clear();
 	delete this->terrain;
 	primitives.clear();
-	this->constantBuffer.release();
+	//this->constantBufferPerFrame.release();
 	delete this->particles;
 }
