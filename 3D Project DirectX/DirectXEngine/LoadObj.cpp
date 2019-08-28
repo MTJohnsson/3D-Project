@@ -51,8 +51,8 @@ Vertex LoadObj::setFaces2(std::string f)
 
 	/*sPos = ePos + 1;
 	ePos = f.length();
-	temp = f.substr(sPos, ePos - sPos);*/
-	index.Color = color;
+	temp = f.substr(sPos, ePos - sPos);
+	index.Color = color;*/
 
 	return index;
 }

@@ -19,7 +19,7 @@ void ReflectionSphere::draw(ConstantBuffer<PerFrameMatrices>& VPCP, ConstantBuff
 	world.data.world = this->getWorld();
 	world.updateConstantBuffer(deviceContext);
 
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext->IASetInputLayout(shaderPtr->GetVertexShader()->GetInputLayout());
 	deviceContext->VSSetShader(shaderPtr->GetVertexShader()->GetShader(), NULL, 0);
 	deviceContext->GSSetShader(nullptr, nullptr, 0);
