@@ -23,6 +23,7 @@ public:
 	Skybox();
 	~Skybox();
 	void shutDown();
+	ID3D11ShaderResourceView* getTextureCube() const { return this->cubeSRV; };
 	bool initialize(ID3D11Device* device);
 	bool setTexture(ID3D11Device* device, ID3D11DeviceContext* context, std::string file);
 	bool renderSkybox(ID3D11DeviceContext* context);
