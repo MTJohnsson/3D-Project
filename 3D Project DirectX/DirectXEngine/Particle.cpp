@@ -4,7 +4,7 @@
 Particle::Particle()
 {
 
-	particle.Position = XMFLOAT3(10.f, 48.1f, 62.f);
+	particle.Position = XMFLOAT3(15.f, 49.5f, 62.f);
 //	std::vector<Vertex> verticesScreenQuad;
 //	std::vector<DWORD> indices;
 //
@@ -149,7 +149,7 @@ void Particle::draw(ConstantBuffer<PerFrameMatrices> constantBuffer, ConstantBuf
 	Graphics::deviceContext->GSSetConstantBuffers(2, 1, constantBuffer.getConstantBuffer());
 
 	Graphics::deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
-	Graphics::deviceContext->PSSetShaderResources(0, 1, texture.getTextureView());
+	Graphics::deviceContext->PSSetShaderResources(0, 1, &this->cubeSRV);
 	//Graphics::deviceContext->PSSetSamplers(0, 1, &SamplerState);
 	Graphics::deviceContext->Draw(1, 0);
 

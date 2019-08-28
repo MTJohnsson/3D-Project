@@ -8,6 +8,8 @@ struct GSOutput
 	float4 Pos: SV_POSITION;
 	float2 tex : TEXCOORD;
 	float3 Normal:NORMAL;
+	float3 camPos : CAMPOS;
+	float3 worldPos : WORLDPOS;
 };
 cbuffer camVector : register(b1)
 {
@@ -32,19 +34,20 @@ void main(point GS_IN input[1], inout TriangleStream<GSOutput> OutputStream)
 {
 	GSOutput output;
 	//	float3 up = (0, 1, 0);
-	float3 Normal = camPos.xyz - input[0].Pos;
-	Normal = normalize(Normal);
+	float3 viewDir = camPos.xyz - input[0].Pos;
+	viewDir = normalize(viewDir);
 	// right = up x F 
-	float3 right = cross(upp, Normal);
+	float3 right = cross(upp, viewDir);
+	float size = 5;
 	//blev fel här tidigare
 	//ordningen i cross producten är viktigt då den bestämmer riktning.
-	float3 up = normalize(cross(Normal, right));
+	float3 up = normalize(cross(viewDir, right));
 	right = normalize(right);
 	float3 vert[4];
-	vert[0] = input[0].Pos + (-right); // Bottom left
-	vert[1] = input[0].Pos + (right); // Bottom right
-	vert[2] = input[0].Pos + (-right + up); // Top left
-	vert[3] = input[0].Pos + (right + up); // Top right
+	vert[0] = input[0].Pos + (-right * size); // Bottom left
+	vert[1] = input[0].Pos + (right * size); // Bottom right
+	vert[2] = input[0].Pos + ((-right + up) * size); // Top left
+	vert[3] = input[0].Pos + ((right + up) * size); // Top right
 
 	float2 texCoord[4];
 	texCoord[0] = float2(0, 1);
@@ -56,7 +59,9 @@ void main(point GS_IN input[1], inout TriangleStream<GSOutput> OutputStream)
 	{
 		output.Pos = mul(projection, mul(view, float4(vert[i], 1.0f)));
 		output.tex = texCoord[i];
-		output.Normal = mul((float3x3)world, Normal);// Normal;
+		output.Normal = viewDir; // Normal;
+		output.camPos = camPos.xyz;
+		output.worldPos = vert[i];
 		OutputStream.Append(output);
 	}
 	OutputStream.RestartStrip();

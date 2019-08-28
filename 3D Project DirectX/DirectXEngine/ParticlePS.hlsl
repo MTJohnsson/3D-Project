@@ -88,13 +88,15 @@
 //	return float4(0.1f, 0.1f, 0.1f, 1);
 //};
 
-Texture2D txDiffuse : register(t0);
+TextureCube txDiffuse : register(t0);
 SamplerState sampAni;
 struct GSOutput
 {
 	float4 Pos: SV_POSITION;
 	float2 tex : TEXCOORD;
 	float3 Normal :NORMAL;
+	float3 camPos : CAMPOS;
+	float3 worldPos : WORLDPOS;
 };
 
 
@@ -108,9 +110,14 @@ struct DeferredPixelOut
 DeferredPixelOut main(GSOutput input)
 {
 	DeferredPixelOut DefPOut;
+	float3 incident = -(input.camPos - input.worldPos);
+	//reflect skapar en ny vector av reflectionen 
+	float3 reflectionDirection = reflect(incident, input.Normal);
+	float4 reflectionColour = txDiffuse.Sample(sampAni, reflectionDirection);
 	
-	DefPOut.textBuffer = txDiffuse.Sample(sampAni, input.tex);
-	DefPOut.normalBuffer = float4(input.Normal, 1.0f);
+	DefPOut.textBuffer = reflectionColour;
+	//DefPOut.textBuffer = txDiffuse.Sample(sampAni, input.tex);
+	DefPOut.normalBuffer = float4(input.Normal, 0.5f);
 	DefPOut.positionBuffer = float4(input.Pos.xyz, 1.0f);
 	return DefPOut;
 }

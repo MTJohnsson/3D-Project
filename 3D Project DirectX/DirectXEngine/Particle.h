@@ -25,12 +25,14 @@ private:
 //	XMMATRIX world = XMMatrixIdentity();
 	ParticleData particle;
 	Texture texture;
+	ID3D11ShaderResourceView* cubeSRV;
 	ID3D11SamplerState* SamplerState;
 	ID3D11BlendState* _alphaBlendState;
 
 public:
 	Particle();
 	~Particle();
+	void setCubeTexture(ID3D11ShaderResourceView* srv) { this->cubeSRV = srv; };
 	void draw(ConstantBuffer<PerFrameMatrices> constantBuffer, ConstantBuffer<PerObjectMatrices> world);
 };
 

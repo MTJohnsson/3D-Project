@@ -72,7 +72,7 @@ bool GameObjects::InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContex
 	}
 
 	particles = new Particle();
-	
+	particles->setCubeTexture(skybox.getTextureCube());
 
 	return true;
 }
