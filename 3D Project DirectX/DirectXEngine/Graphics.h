@@ -116,7 +116,8 @@ private:
 	Shader lastPassShaders;
 	Shader deferredShadersNormalMapping;
 
-
+	//Reflection Shader
+	Shader reflectionShaders;
 
 
 	void normalize(XMFLOAT3& vector)

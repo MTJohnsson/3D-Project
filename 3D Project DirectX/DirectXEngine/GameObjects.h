@@ -7,6 +7,7 @@
 #include "Mesh/Terrain.h"
 #include "Particle.h"
 #include "Skybox.h"
+#include "ReflectionSphere.h"
 
 #include <SimpleMath.h>
 #include "DirectXHelp.h"
@@ -69,8 +70,10 @@ public:
 
 
 	vector<Mesh> meshes;
+	ReflectionSphere shinyBall;
 	//GameObjects();
 	bool InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContext * deviceContext, Shader *shader, Shader *shader2);
+	bool InitializeReflectionBall(Shader* shinyShader);
 	bool CreatePrimitive(PRIMITIVIES primitivies);
 	float render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, float dt);
 	void renderSkybox(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos);

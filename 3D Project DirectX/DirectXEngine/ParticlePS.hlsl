@@ -103,7 +103,6 @@ struct DeferredPixelOut
 	float4 textBuffer		: SV_Target0;
 	float4 normalBuffer		: SV_Target1;
 	float4 positionBuffer	: SV_Target2;
-	float4 normalMapBuffer	: SV_Target3;
 };
 
 DeferredPixelOut main(GSOutput input)
@@ -113,6 +112,5 @@ DeferredPixelOut main(GSOutput input)
 	DefPOut.textBuffer = txDiffuse.Sample(sampAni, input.tex);
 	DefPOut.normalBuffer = float4(input.Normal, 1.0f);
 	DefPOut.positionBuffer = float4(input.Pos.xyz, 1.0f);
-	DefPOut.normalMapBuffer	= float4(1.0,1.0,1.0,1.0);
 	return DefPOut;
 }

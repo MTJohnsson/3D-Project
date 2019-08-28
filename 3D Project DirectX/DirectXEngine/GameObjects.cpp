@@ -55,6 +55,7 @@ bool GameObjects::InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContex
 	sphere3.setPosition(15.f, 46.1f, 72.f);
 	meshes.push_back(sphere3);
 
+
 	terrain = new Terrain(device, deviceContext);
 
 	//CreatePrimitive(CUBE);
@@ -74,6 +75,16 @@ bool GameObjects::InitializeGameObjects(ID3D11Device* device, ID3D11DeviceContex
 	
 
 	return true;
+}
+
+bool GameObjects::InitializeReflectionBall(Shader * shinyShader)
+{
+	shinyBall.InitializeObject(this->device, this->deviceContext, "ObjFiles/earth.obj", shinyShader);
+	shinyBall.setScale(1, 1, 1);
+	shinyBall.setPosition(15.f, 42.1f, 72.f);
+	shinyBall.setCubeSRV(skybox.getTextureCube());
+	
+	return false;
 }
 
 bool GameObjects::CreatePrimitive(PRIMITIVIES primitivies)
@@ -142,7 +153,10 @@ float GameObjects::render(XMMATRIX view, XMMATRIX projection, XMFLOAT3 camPos, f
 	this->deviceContext->GSSetConstantBuffers(1, 1, constantBufferWorld.getConstantBuffer());
 	this->terrain->draw();
 
+	shinyBall.draw(constantBufferPerFrame, constantBufferWorld);
 	particles->draw(constantBufferPerFrame, constantBufferWorld);
+
+	/*shinyBall.draw(constantBufferPerFrame, constantBufferWorld);*/
 
 	return heightDifferance;
 }

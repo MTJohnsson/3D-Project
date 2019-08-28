@@ -34,7 +34,7 @@ bool Graphics::Initialize(HWND hwnd, int width, int height)
 	//objects.InitializeGameObjects(device, deviceContext, shader, shader2);
 	//objects.InitializeGameObjects(device, deviceContext, &deferredShaders, &deferredShadersNormalMapping);
 	objects.InitializeGameObjects(device, deviceContext, &deferredShadersNormalMapping, deferredShaders);
-
+	objects.InitializeReflectionBall(&reflectionShaders);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -798,6 +798,8 @@ bool Graphics::InitializeShaders()
 	deferredShadersNormalMapping.CreatPixelShader(device, shaderfolder + L"DeferredPixelShaderNormalMapping.cso");
 	deferredShadersNormalMapping.CreatGeometryShader(device, shaderfolder + L"DeferredGeometryShader.cso");
 
+	reflectionShaders.CreatVertexShader(device, shaderfolder + L"ReflectionVS.cso", layout2, numElements2);
+	reflectionShaders.CreatPixelShader(device, shaderfolder + L"ReflectionPS.cso");
 
 	this->ParticlesShader = new Shader();
 	D3D11_INPUT_ELEMENT_DESC layout3[] =

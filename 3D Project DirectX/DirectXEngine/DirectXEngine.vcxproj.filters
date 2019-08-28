@@ -49,6 +49,12 @@
     <FxCompile Include="VertexShader.hlsl">
       <Filter>Shader Files\Other Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="ResourcesFiles\ReflectionPS.hlsl">
+      <Filter>Shader Files\Reflection</Filter>
+    </FxCompile>
+    <FxCompile Include="ResourcesFiles\ReflectionVS.hlsl">
+      <Filter>Shader Files\Reflection</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Lib\Transform.cpp">
@@ -122,6 +128,9 @@
     </ClCompile>
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ReflectionSphere.cpp">
+      <Filter>C++ Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +218,9 @@
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>Other</Filter>
     </ClInclude>
+    <ClInclude Include="ReflectionSphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -240,6 +252,9 @@
     </Filter>
     <Filter Include="Shader Files\Other Shaders">
       <UniqueIdentifier>{4b2ef212-040b-4eec-9493-077aa30d1559}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\Reflection">
+      <UniqueIdentifier>{b0628b40-f4f1-43ec-afb0-0bc5ad247c37}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
